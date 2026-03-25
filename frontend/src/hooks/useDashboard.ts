@@ -8,6 +8,8 @@ import type {
   VerticalCount,
   OpportunityStageCount,
   PriorityMatrixPoint,
+  ThemeHeatmapCell,
+  WordFrequency,
 } from "@/types/dashboard";
 import type { InsightFilters } from "@/types/insight";
 
@@ -72,5 +74,21 @@ export function usePriorityMatrix(filters?: InsightFilters) {
     queryKey: ["dashboard", "priority-matrix", filters],
     queryFn: () =>
       import("@/api/dashboard").then((m) => m.fetchPriorityMatrix(filters)),
+  });
+}
+
+export function useThemeHeatmap(filters?: InsightFilters) {
+  return useQuery<ThemeHeatmapCell[]>({
+    queryKey: ["dashboard", "theme-heatmap", filters],
+    queryFn: () =>
+      import("@/api/dashboard").then((m) => m.fetchThemeHeatmap(filters)),
+  });
+}
+
+export function useWordFrequencies(filters?: InsightFilters) {
+  return useQuery<WordFrequency[]>({
+    queryKey: ["dashboard", "word-frequencies", filters],
+    queryFn: () =>
+      import("@/api/dashboard").then((m) => m.fetchWordFrequencies(filters)),
   });
 }

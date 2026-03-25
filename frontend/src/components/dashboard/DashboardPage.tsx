@@ -9,6 +9,8 @@ import { TopAccountsTable } from "./TopAccountsTable";
 import { VerticalChart } from "./VerticalChart";
 import { OpportunityPipeline } from "./OpportunityPipeline";
 import { PriorityMatrix } from "./PriorityMatrix";
+import { ThemeHeatmap } from "./ThemeHeatmap";
+import { WordCloud } from "./WordCloud";
 import {
   useSummary,
   useByArea,
@@ -18,6 +20,8 @@ import {
   useByVertical,
   useByOpportunityStage,
   usePriorityMatrix,
+  useThemeHeatmap,
+  useWordFrequencies,
 } from "@/hooks/useDashboard";
 import { formatNumber, formatCurrency } from "@/lib/utils";
 import type { InsightFilters } from "@/types/insight";
@@ -40,8 +44,10 @@ export function DashboardPage() {
   const byVertical = useByVertical(filters);
   const byOppStage = useByOpportunityStage(filters);
   const priorityMatrix = usePriorityMatrix(filters);
+  const themeHeatmap = useThemeHeatmap(filters);
+  const wordFreqs = useWordFrequencies(filters);
 
-  const allQueries = [summary, byArea, byCategory, byAccount, trend, byVertical, byOppStage, priorityMatrix];
+  const allQueries = [summary, byArea, byCategory, byAccount, trend, byVertical, byOppStage, priorityMatrix, themeHeatmap, wordFreqs];
   const hasError = allQueries.some((q) => q.isError);
   const firstError = allQueries.find((q) => q.isError)?.error;
 
@@ -173,14 +179,20 @@ export function DashboardPage() {
         />
       </div>
 
-      {/* Vertical + Trend */}
+      {/* Theme Heatmap — full width */}
+      <ThemeHeatmap data={themeHeatmap.data} loading={themeHeatmap.isLoading} />
+
+      {/* Word Cloud + Trend */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <VerticalChart data={byVertical.data} loading={byVertical.isLoading} />
+        <WordCloud data={wordFreqs.data} loading={wordFreqs.isLoading} />
         <TrendChart data={trend.data} loading={trend.isLoading} />
       </div>
 
-      {/* Accounts */}
-      <TopAccountsTable data={byAccount.data} loading={byAccount.isLoading} />
+      {/* Vertical */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <VerticalChart data={byVertical.data} loading={byVertical.isLoading} />
+        <TopAccountsTable data={byAccount.data} loading={byAccount.isLoading} />
+      </div>
     </div>
   );
 }

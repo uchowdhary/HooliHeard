@@ -58,3 +58,15 @@ class PriorityMatrixPoint(BaseModel):
     avg_priority: float
     total_arr: float
     account_count: int
+
+
+class ThemeHeatmapCell(BaseModel):
+    product_area: str
+    insight_category: str
+    count: int
+    account_count: int
+
+
+class WordFrequency(BaseModel):
+    word: str
+    count: int

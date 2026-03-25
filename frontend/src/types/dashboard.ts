@@ -54,3 +54,15 @@ export interface PriorityMatrixPoint {
   total_arr: number;
   account_count: number;
 }
+
+export interface ThemeHeatmapCell {
+  product_area: string;
+  insight_category: string;
+  count: number;
+  account_count: number;
+}
+
+export interface WordFrequency {
+  word: string;
+  count: number;
+}

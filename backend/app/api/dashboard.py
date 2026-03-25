@@ -13,8 +13,10 @@ from app.schemas.dashboard import (
     DashboardSummary,
     OpportunityStageCount,
     PriorityMatrixPoint,
+    ThemeHeatmapCell,
     TrendPoint,
     VerticalCount,
+    WordFrequency,
 )
 from app.services.priority_service import (
     get_enhanced_accounts,
@@ -22,6 +24,8 @@ from app.services.priority_service import (
     get_insights_by_opportunity_stage,
     get_insights_by_vertical,
     get_priority_matrix,
+    get_theme_heatmap,
+    get_word_frequencies,
     _apply_priority_filters,
 )
 
@@ -256,3 +260,45 @@ def priority_matrix(
     )
     rows = get_priority_matrix(db, f)
     return [PriorityMatrixPoint(**r) for r in rows]
+
+
+@router.get("/theme-heatmap", response_model=list[ThemeHeatmapCell])
+def theme_heatmap(
+    product_area: Optional[str] = Query(None),
+    insight_category: Optional[str] = Query(None),
+    account_name: Optional[str] = Query(None),
+    date_from: Optional[str] = Query(None),
+    date_to: Optional[str] = Query(None),
+    icp: Optional[str] = Query(None),
+    vertical: Optional[str] = Query(None),
+    opportunity_stage: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    f = _filters_dict(
+        product_area=product_area, insight_category=insight_category,
+        account_name=account_name, date_from=date_from, date_to=date_to,
+        icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+    )
+    rows = get_theme_heatmap(db, f)
+    return [ThemeHeatmapCell(**r) for r in rows]
+
+
+@router.get("/word-frequencies", response_model=list[WordFrequency])
+def word_frequencies(
+    product_area: Optional[str] = Query(None),
+    insight_category: Optional[str] = Query(None),
+    account_name: Optional[str] = Query(None),
+    date_from: Optional[str] = Query(None),
+    date_to: Optional[str] = Query(None),
+    icp: Optional[str] = Query(None),
+    vertical: Optional[str] = Query(None),
+    opportunity_stage: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    f = _filters_dict(
+        product_area=product_area, insight_category=insight_category,
+        account_name=account_name, date_from=date_from, date_to=date_to,
+        icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+    )
+    rows = get_word_frequencies(db, f)
+    return [WordFrequency(**r) for r in rows]

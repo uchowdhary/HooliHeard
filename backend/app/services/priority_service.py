@@ -125,6 +125,62 @@ def get_enhanced_accounts(db: Session, filters: dict, limit: int = 20):
     ]
 
 
+def get_theme_heatmap(db: Session, filters: dict):
+    """Return product_area × insight_category matrix with counts and account counts."""
+    q = db.query(
+        Insight.product_area,
+        Insight.insight_category,
+        func.count(Insight.id).label("count"),
+        func.count(func.distinct(Insight.account_name)).label("account_count"),
+    )
+    q = _apply_priority_filters(q, filters)
+    rows = (
+        q.group_by(Insight.product_area, Insight.insight_category)
+        .order_by(func.count(Insight.id).desc())
+        .all()
+    )
+    return [
+        {
+            "product_area": r[0],
+            "insight_category": r[1],
+            "count": r[2],
+            "account_count": r[3],
+        }
+        for r in rows
+    ]
+
+
+# Common stop words to filter out of word frequency analysis
+_STOP_WORDS = frozenset(
+    "a an and are as at be but by for from had has have he her his i if in into is it "
+    "its me my no nor not of on or our out own s she so some such t than that the their "
+    "them then there these they this those to too up us very was we were what when where "
+    "which while who whom why will with would you your about after all also am among any "
+    "been before being between both can could did do does doing done during each few get "
+    "got had has have having how however just like made may might more most much must need "
+    "new now off often old only other our over own said same see should show since so still "
+    "take through under use used using very want well went what when where which while who "
+    "why will with work would yet customer customers asked asking wants wanted needs needed "
+    "using currently issue issues CoreWeave coreweave".lower().split()
+)
+
+
+def get_word_frequencies(db: Session, filters: dict, limit: int = 80):
+    """Extract word frequencies from insight_text for word cloud."""
+    import re
+    from collections import Counter
+
+    q = _apply_priority_filters(db.query(Insight.insight_text), filters)
+    rows = q.filter(Insight.insight_text.isnot(None)).all()
+
+    word_counts: Counter = Counter()
+    for (text,) in rows:
+        words = re.findall(r"[a-zA-Z]{3,}", text.lower())
+        word_counts.update(w for w in words if w not in _STOP_WORDS)
+
+    return [{"word": w, "count": c} for w, c in word_counts.most_common(limit)]
+
+
 def _apply_priority_filters(query, filters: dict):
     """Apply standard + priority-specific filters."""
     if filters.get("product_area"):

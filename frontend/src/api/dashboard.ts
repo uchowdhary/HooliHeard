@@ -7,6 +7,8 @@ import type {
   VerticalCount,
   OpportunityStageCount,
   PriorityMatrixPoint,
+  ThemeHeatmapCell,
+  WordFrequency,
 } from "@/types/dashboard";
 import type { InsightFilters } from "@/types/insight";
 import { apiFetch, buildQueryString } from "./client";
@@ -81,4 +83,22 @@ export async function fetchPriorityMatrix(
     (filters ?? {}) as Record<string, string | number | undefined>,
   );
   return apiFetch<PriorityMatrixPoint[]>(`/dashboard/priority-matrix${qs}`);
+}
+
+export async function fetchThemeHeatmap(
+  filters?: InsightFilters,
+): Promise<ThemeHeatmapCell[]> {
+  const qs = buildQueryString(
+    (filters ?? {}) as Record<string, string | number | undefined>,
+  );
+  return apiFetch<ThemeHeatmapCell[]>(`/dashboard/theme-heatmap${qs}`);
+}
+
+export async function fetchWordFrequencies(
+  filters?: InsightFilters,
+): Promise<WordFrequency[]> {
+  const qs = buildQueryString(
+    (filters ?? {}) as Record<string, string | number | undefined>,
+  );
+  return apiFetch<WordFrequency[]>(`/dashboard/word-frequencies${qs}`);
 }

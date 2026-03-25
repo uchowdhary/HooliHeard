@@ -4,6 +4,9 @@ import type {
   CategoryCount,
   AccountCount,
   TrendPoint,
+  VerticalCount,
+  OpportunityStageCount,
+  PriorityMatrixPoint,
 } from "@/types/dashboard";
 import type { InsightFilters } from "@/types/insight";
 import { apiFetch, buildQueryString } from "./client";
@@ -51,4 +54,31 @@ export async function fetchTrend(
     (filters ?? {}) as Record<string, string | number | undefined>,
   );
   return apiFetch<TrendPoint[]>(`/dashboard/trend${qs}`);
+}
+
+export async function fetchByVertical(
+  filters?: InsightFilters,
+): Promise<VerticalCount[]> {
+  const qs = buildQueryString(
+    (filters ?? {}) as Record<string, string | number | undefined>,
+  );
+  return apiFetch<VerticalCount[]>(`/dashboard/by-vertical${qs}`);
+}
+
+export async function fetchByOpportunityStage(
+  filters?: InsightFilters,
+): Promise<OpportunityStageCount[]> {
+  const qs = buildQueryString(
+    (filters ?? {}) as Record<string, string | number | undefined>,
+  );
+  return apiFetch<OpportunityStageCount[]>(`/dashboard/by-opportunity-stage${qs}`);
+}
+
+export async function fetchPriorityMatrix(
+  filters?: InsightFilters,
+): Promise<PriorityMatrixPoint[]> {
+  const qs = buildQueryString(
+    (filters ?? {}) as Record<string, string | number | undefined>,
+  );
+  return apiFetch<PriorityMatrixPoint[]>(`/dashboard/priority-matrix${qs}`);
 }

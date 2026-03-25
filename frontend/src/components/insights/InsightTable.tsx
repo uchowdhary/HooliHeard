@@ -1,7 +1,7 @@
 import { DataTable } from "@/components/shared/DataTable";
 import { Badge } from "@/components/shared/Badge";
-import { PRODUCT_AREA_COLORS, SOURCE_TOOLS } from "@/lib/constants";
-import { truncate, formatDate } from "@/lib/utils";
+import { PRODUCT_AREA_COLORS, URGENCY_COLORS, SOURCE_TOOLS } from "@/lib/constants";
+import { truncate, formatDate, formatCurrency } from "@/lib/utils";
 import type { Column } from "@/components/shared/DataTable";
 import type { Insight } from "@/types/insight";
 
@@ -13,11 +13,38 @@ interface Props {
 
 const columns: Column<Insight>[] = [
   {
+    key: "priority",
+    header: "Priority",
+    width: "80px",
+    sortable: true,
+    sortKey: (row) => row.priority_score ?? 0,
+    render: (row) => {
+      const score = row.priority_score;
+      if (score == null) return <span className="text-xs text-slate-400">—</span>;
+      const color =
+        score >= 5 ? "text-red-700 bg-red-50" :
+        score >= 2 ? "text-amber-700 bg-amber-50" :
+        "text-slate-600 bg-slate-50";
+      return (
+        <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-bold tabular-nums ${color}`}>
+          {score.toFixed(1)}
+        </span>
+      );
+    },
+  },
+  {
     key: "account",
     header: "Account",
     width: "140px",
     render: (row) => (
-      <span className="font-medium text-slate-900">{row.account_name}</span>
+      <div>
+        <span className="font-medium text-slate-900">{row.account_name}</span>
+        {row.account_priority_group && (
+          <span className="ml-1 text-[9px] font-semibold text-amber-600 bg-amber-50 px-1 py-0.5 rounded">
+            {row.account_priority_group}
+          </span>
+        )}
+      </div>
     ),
   },
   {
@@ -48,9 +75,37 @@ const columns: Column<Insight>[] = [
     ),
   },
   {
+    key: "urgency",
+    header: "Urgency",
+    width: "80px",
+    render: (row) => {
+      const level = row.urgency_level;
+      if (!level) return <span className="text-xs text-slate-400">—</span>;
+      return (
+        <Badge
+          label={level}
+          color={URGENCY_COLORS[level] ?? "#94a3b8"}
+          variant="subtle"
+        />
+      );
+    },
+  },
+  {
+    key: "opportunity",
+    header: "Opp $",
+    width: "90px",
+    sortable: true,
+    sortKey: (row) => row.opportunity_amount ?? 0,
+    render: (row) => (
+      <span className="text-xs text-slate-600 tabular-nums">
+        {row.opportunity_amount ? formatCurrency(row.opportunity_amount) : "—"}
+      </span>
+    ),
+  },
+  {
     key: "source",
     header: "Source",
-    width: "80px",
+    width: "60px",
     render: (row) => {
       const tool = SOURCE_TOOLS[row.source_tool];
       if (!tool) return <span className="text-xs text-slate-500">{row.source_tool}</span>;
@@ -68,7 +123,7 @@ const columns: Column<Insight>[] = [
   {
     key: "date",
     header: "Date",
-    width: "110px",
+    width: "100px",
     sortable: true,
     sortKey: (row) => row.date_of_record,
     render: (row) => (
@@ -76,17 +131,6 @@ const columns: Column<Insight>[] = [
         {formatDate(row.date_of_record)}
       </span>
     ),
-  },
-  {
-    key: "status",
-    header: "Status",
-    width: "100px",
-    render: (row) =>
-      row.unique_insight_status === "Key Record" ? (
-        <Badge label="Key" color="#10B981" variant="subtle" />
-      ) : (
-        <Badge label="Duplicate" color="#94a3b8" variant="subtle" />
-      ),
   },
 ];
 

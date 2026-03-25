@@ -1,24 +1,11 @@
 import { Card } from "@/components/shared/Card";
+import { formatCurrency } from "@/lib/utils";
 import type { AccountCount } from "@/types/dashboard";
 
 interface Props {
   data: AccountCount[] | undefined;
   loading: boolean;
 }
-
-// Map top accounts to their primary product area for the demo
-const ACCOUNT_TOP_AREAS: Record<string, string> = {
-  Anthropic: "Infra",
-  Meta: "CKS",
-  Microsoft: "Platform",
-  Cohere: "W&B",
-  "Mistral AI": "AI Services",
-  "Inflection AI": "Infra",
-  "Stability AI": "Platform",
-  "Character.AI": "Platform",
-  "Runway ML": "AI Services",
-  "Hugging Face": "AI Services",
-};
 
 const AREA_DOT_COLORS: Record<string, string> = {
   Infra: "bg-blue-500",
@@ -53,15 +40,26 @@ export function TopAccountsTable({ data, loading }: Props) {
                 <th className="pb-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Insights
                 </th>
-                <th className="pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 pl-6">
+                <th className="pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 pl-4">
                   Top Area
+                </th>
+                <th className="pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 pl-4">
+                  ICP
+                </th>
+                <th className="pb-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 pl-4">
+                  Vertical
+                </th>
+                <th className="pb-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Opp $
+                </th>
+                <th className="pb-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Priority
                 </th>
               </tr>
             </thead>
             <tbody>
               {top10.map((row, i) => {
-                const area =
-                  ACCOUNT_TOP_AREAS[row.account_name] ?? "Platform";
+                const area = row.top_area ?? "Platform";
                 return (
                   <tr
                     key={row.account_name}
@@ -72,16 +70,45 @@ export function TopAccountsTable({ data, loading }: Props) {
                     </td>
                     <td className="py-3 font-medium text-slate-900">
                       {row.account_name}
+                      {row.priority_group && (
+                        <span className="ml-2 text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                          {row.priority_group}
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 text-right font-semibold text-slate-700 tabular-nums">
                       {row.count}
                     </td>
-                    <td className="py-3 pl-6">
+                    <td className="py-3 pl-4">
                       <span className="inline-flex items-center gap-2 text-slate-600">
                         <span
                           className={`inline-block h-2 w-2 rounded-full ${AREA_DOT_COLORS[area] ?? "bg-slate-400"}`}
                         />
                         {area}
+                      </span>
+                    </td>
+                    <td className="py-3 pl-4 text-xs text-slate-600">
+                      {row.icp ?? "—"}
+                    </td>
+                    <td className="py-3 pl-4 text-xs text-slate-600">
+                      {row.vertical ?? "—"}
+                    </td>
+                    <td className="py-3 text-right text-xs text-slate-600 tabular-nums">
+                      {row.opportunity_amount
+                        ? formatCurrency(row.opportunity_amount)
+                        : "—"}
+                    </td>
+                    <td className="py-3 text-right">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums ${
+                          (row.avg_priority ?? 0) >= 5
+                            ? "bg-red-50 text-red-700"
+                            : (row.avg_priority ?? 0) >= 2
+                              ? "bg-amber-50 text-amber-700"
+                              : "bg-slate-50 text-slate-600"
+                        }`}
+                      >
+                        {row.avg_priority?.toFixed(1) ?? "—"}
                       </span>
                     </td>
                   </tr>

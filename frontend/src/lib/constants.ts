@@ -30,6 +30,22 @@ export const INSIGHT_CATEGORIES = [
   "Process / Operational Friction",
 ] as const;
 
+export const URGENCY_COLORS: Record<string, string> = {
+  High: "#EF4444",
+  Medium: "#F59E0B",
+  Low: "#10B981",
+};
+
+export const OPPORTUNITY_STAGE_COLORS: Record<string, string> = {
+  "Closed Won": "#10B981",
+  Negotiation: "#3B82F6",
+  Proposal: "#8B5CF6",
+  "Capacity Review": "#F59E0B",
+  Discovery: "#EC4899",
+  Prospecting: "#6B7280",
+  New: "#94A3B8",
+};
+
 export const SOURCE_TOOLS: Record<
   string,
   { icon: string; color: string; label: string }

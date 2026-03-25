@@ -1,24 +1,32 @@
 import type { Insight } from "@/types/insight";
 import { Badge } from "@/components/shared/Badge";
-import { PRODUCT_AREA_COLORS, SOURCE_TOOLS } from "@/lib/constants";
-import { formatDate } from "@/lib/utils";
+import { PRODUCT_AREA_COLORS, URGENCY_COLORS, SOURCE_TOOLS } from "@/lib/constants";
+import { formatDate, formatCurrency } from "@/lib/utils";
 
 interface Props {
-  insight: Insight | null | undefined;
+  insight: Insight | undefined;
   loading: boolean;
   onClose: () => void;
+}
+
+function DetailRow({ label, value }: { label: string; value: string | undefined | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex justify-between">
+      <span>{label}</span>
+      <span className="font-medium text-slate-700">{value}</span>
+    </div>
+  );
 }
 
 export function InsightDetail({ insight, loading, onClose }: Props) {
   return (
     <div className="fixed inset-y-0 right-0 z-50 flex">
-      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/20 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Panel */}
       <div className="relative ml-auto flex h-full w-full max-w-lg flex-col bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
@@ -66,6 +74,24 @@ export function InsightDetail({ insight, loading, onClose }: Props) {
                   }
                   variant="subtle"
                 />
+                {insight.urgency_level && (
+                  <Badge
+                    label={insight.urgency_level}
+                    color={URGENCY_COLORS[insight.urgency_level] ?? "#94a3b8"}
+                    variant="subtle"
+                  />
+                )}
+                {insight.priority_score != null && (
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                    insight.priority_score >= 5
+                      ? "bg-red-50 text-red-700"
+                      : insight.priority_score >= 2
+                        ? "bg-amber-50 text-amber-700"
+                        : "bg-slate-100 text-slate-600"
+                  }`}>
+                    Priority: {insight.priority_score.toFixed(1)}
+                  </span>
+                )}
               </div>
 
               {/* Insight Text */}
@@ -78,14 +104,75 @@ export function InsightDetail({ insight, loading, onClose }: Props) {
                 </p>
               </div>
 
-              {/* Account */}
-              <div className="rounded-lg border border-slate-200 p-4">
+              {/* Account Card */}
+              <div className="rounded-lg border border-slate-200 p-4 space-y-2">
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Account
                 </label>
                 <p className="text-sm font-semibold text-slate-900">
                   {insight.account_name}
+                  {insight.account_priority_group && (
+                    <span className="ml-2 text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                      {insight.account_priority_group}
+                    </span>
+                  )}
                 </p>
+                <div className="grid grid-cols-2 gap-2 text-xs text-slate-500 mt-2">
+                  {insight.icp && (
+                    <div>
+                      <span className="text-slate-400">ICP:</span>{" "}
+                      <span className="font-medium text-slate-700">{insight.icp}</span>
+                    </div>
+                  )}
+                  {insight.vertical && (
+                    <div>
+                      <span className="text-slate-400">Vertical:</span>{" "}
+                      <span className="font-medium text-slate-700">{insight.vertical}</span>
+                    </div>
+                  )}
+                  {insight.opportunity_amount != null && (
+                    <div>
+                      <span className="text-slate-400">Opportunity:</span>{" "}
+                      <span className="font-medium text-slate-700">{formatCurrency(insight.opportunity_amount)}</span>
+                    </div>
+                  )}
+                  {insight.opportunity_stage && (
+                    <div>
+                      <span className="text-slate-400">Stage:</span>{" "}
+                      <span className="font-medium text-slate-700">{insight.opportunity_stage}</span>
+                    </div>
+                  )}
+                  {insight.total_revenue != null && insight.total_revenue > 0 && (
+                    <div>
+                      <span className="text-slate-400">Revenue:</span>{" "}
+                      <span className="font-medium text-slate-700">{formatCurrency(insight.total_revenue)}</span>
+                    </div>
+                  )}
+                  {insight.closed_won_opp_count != null && (
+                    <div>
+                      <span className="text-slate-400">Won Opps:</span>{" "}
+                      <span className="font-medium text-slate-700">{insight.closed_won_opp_count}</span>
+                    </div>
+                  )}
+                  {insight.gpu_types && (
+                    <div className="col-span-2">
+                      <span className="text-slate-400">GPU Types:</span>{" "}
+                      <span className="font-medium text-slate-700">{insight.gpu_types}</span>
+                    </div>
+                  )}
+                  {insight.competitors_mentioned && (
+                    <div className="col-span-2">
+                      <span className="text-slate-400">Competitors:</span>{" "}
+                      <span className="font-medium text-red-600">{insight.competitors_mentioned}</span>
+                    </div>
+                  )}
+                  {insight.workloads && (
+                    <div className="col-span-2">
+                      <span className="text-slate-400">Workloads:</span>{" "}
+                      <span className="font-medium text-slate-700">{insight.workloads}</span>
+                    </div>
+                  )}
+                </div>
                 {insight.role_present && (
                   <p className="mt-1 text-xs text-slate-500">
                     Contact: {insight.role_present}
@@ -137,24 +224,12 @@ export function InsightDetail({ insight, loading, onClose }: Props) {
 
               {/* Metadata */}
               <div className="space-y-2 text-xs text-slate-500">
-                <div className="flex justify-between">
-                  <span>Product Subcategory</span>
-                  <span className="font-medium text-slate-700">
-                    {insight.product_subcategory}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Date of Record</span>
-                  <span className="font-medium text-slate-700">
-                    {formatDate(insight.date_of_record)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Dedup Group</span>
-                  <span className="font-mono font-medium text-slate-700">
-                    {insight.dedup_group_key}
-                  </span>
-                </div>
+                <DetailRow label="Product Subcategory" value={insight.product_subcategory} />
+                <DetailRow label="Date of Record" value={formatDate(insight.date_of_record)} />
+                <DetailRow label="Use Case" value={insight.use_case} />
+                <DetailRow label="Conversation Type" value={insight.conversation_type} />
+                <DetailRow label="Dedup Group" value={insight.dedup_group_key} />
+                <DetailRow label="Comments" value={insight.comments} />
               </div>
             </>
           )}

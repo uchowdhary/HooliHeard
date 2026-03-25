@@ -1,10 +1,11 @@
+import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
   title: string;
   value: string | number;
   subtitle?: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   className?: string;
 }
 
@@ -31,9 +32,9 @@ export function StatCard({ title, value, subtitle, icon, className }: StatCardPr
 
 interface CardProps {
   title?: string;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
-  action?: React.ReactNode;
+  action?: ReactNode;
 }
 
 export function Card({ title, children, className, action }: CardProps) {

@@ -11,24 +11,47 @@ from app.schemas.dashboard import (
     AreaCount,
     CategoryCount,
     DashboardSummary,
+    OpportunityStageCount,
+    PriorityMatrixPoint,
     TrendPoint,
+    VerticalCount,
+)
+from app.services.priority_service import (
+    get_enhanced_accounts,
+    get_enhanced_summary,
+    get_insights_by_opportunity_stage,
+    get_insights_by_vertical,
+    get_priority_matrix,
+    _apply_priority_filters,
 )
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 
-def _apply_dashboard_filters(query, product_area, insight_category, account_name, date_from, date_to):
-    if product_area:
-        query = query.filter(Insight.product_area == product_area)
-    if insight_category:
-        query = query.filter(Insight.insight_category == insight_category)
-    if account_name:
-        query = query.filter(Insight.account_name.ilike(f"%{account_name}%"))
-    if date_from:
-        query = query.filter(Insight.date_of_record >= date_from)
-    if date_to:
-        query = query.filter(Insight.date_of_record <= date_to)
-    return query
+def _filters_dict(**kwargs):
+    return {k: v for k, v in kwargs.items()}
+
+
+def _common_filters(
+    product_area: Optional[str] = Query(None),
+    insight_category: Optional[str] = Query(None),
+    account_name: Optional[str] = Query(None),
+    date_from: Optional[str] = Query(None),
+    date_to: Optional[str] = Query(None),
+    icp: Optional[str] = Query(None),
+    vertical: Optional[str] = Query(None),
+    opportunity_stage: Optional[str] = Query(None),
+):
+    return {
+        "product_area": product_area,
+        "insight_category": insight_category,
+        "account_name": account_name,
+        "date_from": date_from,
+        "date_to": date_to,
+        "icp": icp,
+        "vertical": vertical,
+        "opportunity_stage": opportunity_stage,
+    }
 
 
 @router.get("/summary", response_model=DashboardSummary)
@@ -38,18 +61,32 @@ def dashboard_summary(
     account_name: Optional[str] = Query(None),
     date_from: Optional[str] = Query(None),
     date_to: Optional[str] = Query(None),
+    icp: Optional[str] = Query(None),
+    vertical: Optional[str] = Query(None),
+    opportunity_stage: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
-    base = _apply_dashboard_filters(db.query(Insight), product_area, insight_category, account_name, date_from, date_to)
+    f = _filters_dict(
+        product_area=product_area, insight_category=insight_category,
+        account_name=account_name, date_from=date_from, date_to=date_to,
+        icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+    )
+    base = _apply_priority_filters(db.query(Insight), f)
     total_insights = base.count()
     key_records = base.filter(Insight.unique_insight_status == "Key Record").count()
     total_accounts = base.with_entities(func.count(func.distinct(Insight.account_name))).scalar() or 0
     sources_active = base.with_entities(func.count(func.distinct(Insight.source_tool))).scalar() or 0
+
+    enhanced = get_enhanced_summary(db, f)
+
     return DashboardSummary(
         total_insights=total_insights,
         key_records=key_records,
         total_accounts=total_accounts,
         sources_active=sources_active,
+        total_arr=enhanced["total_arr"],
+        avg_priority_score=enhanced["avg_priority_score"],
+        top_vertical=enhanced["top_vertical"],
     )
 
 
@@ -60,9 +97,17 @@ def insights_by_area(
     account_name: Optional[str] = Query(None),
     date_from: Optional[str] = Query(None),
     date_to: Optional[str] = Query(None),
+    icp: Optional[str] = Query(None),
+    vertical: Optional[str] = Query(None),
+    opportunity_stage: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
-    q = _apply_dashboard_filters(db.query(Insight), product_area, insight_category, account_name, date_from, date_to)
+    f = _filters_dict(
+        product_area=product_area, insight_category=insight_category,
+        account_name=account_name, date_from=date_from, date_to=date_to,
+        icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+    )
+    q = _apply_priority_filters(db.query(Insight), f)
     rows = (
         q.with_entities(Insight.product_area, func.count(Insight.id).label("count"))
         .group_by(Insight.product_area)
@@ -79,9 +124,17 @@ def insights_by_category(
     account_name: Optional[str] = Query(None),
     date_from: Optional[str] = Query(None),
     date_to: Optional[str] = Query(None),
+    icp: Optional[str] = Query(None),
+    vertical: Optional[str] = Query(None),
+    opportunity_stage: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
-    q = _apply_dashboard_filters(db.query(Insight), product_area, insight_category, account_name, date_from, date_to)
+    f = _filters_dict(
+        product_area=product_area, insight_category=insight_category,
+        account_name=account_name, date_from=date_from, date_to=date_to,
+        icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+    )
+    q = _apply_priority_filters(db.query(Insight), f)
     rows = (
         q.with_entities(Insight.insight_category, func.count(Insight.id).label("count"))
         .group_by(Insight.insight_category)
@@ -98,17 +151,18 @@ def insights_by_account(
     account_name: Optional[str] = Query(None),
     date_from: Optional[str] = Query(None),
     date_to: Optional[str] = Query(None),
+    icp: Optional[str] = Query(None),
+    vertical: Optional[str] = Query(None),
+    opportunity_stage: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
-    q = _apply_dashboard_filters(db.query(Insight), product_area, insight_category, account_name, date_from, date_to)
-    rows = (
-        q.with_entities(Insight.account_name, func.count(Insight.id).label("count"))
-        .group_by(Insight.account_name)
-        .order_by(func.count(Insight.id).desc())
-        .limit(20)
-        .all()
+    f = _filters_dict(
+        product_area=product_area, insight_category=insight_category,
+        account_name=account_name, date_from=date_from, date_to=date_to,
+        icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
     )
-    return [AccountCount(account_name=r[0], count=r[1]) for r in rows]
+    rows = get_enhanced_accounts(db, f, limit=20)
+    return [AccountCount(**r) for r in rows]
 
 
 @router.get("/trend", response_model=list[TrendPoint])
@@ -118,9 +172,17 @@ def insights_trend(
     account_name: Optional[str] = Query(None),
     date_from: Optional[str] = Query(None),
     date_to: Optional[str] = Query(None),
+    icp: Optional[str] = Query(None),
+    vertical: Optional[str] = Query(None),
+    opportunity_stage: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
-    q = _apply_dashboard_filters(db.query(Insight), product_area, insight_category, account_name, date_from, date_to)
+    f = _filters_dict(
+        product_area=product_area, insight_category=insight_category,
+        account_name=account_name, date_from=date_from, date_to=date_to,
+        icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+    )
+    q = _apply_priority_filters(db.query(Insight), f)
     rows = (
         q.with_entities(
             func.to_char(func.date_trunc("week", Insight.date_of_record), "YYYY-MM-DD").label("week"),
@@ -131,3 +193,66 @@ def insights_trend(
         .all()
     )
     return [TrendPoint(week=r[0], count=r[1]) for r in rows]
+
+
+@router.get("/by-vertical", response_model=list[VerticalCount])
+def insights_by_vertical(
+    product_area: Optional[str] = Query(None),
+    insight_category: Optional[str] = Query(None),
+    account_name: Optional[str] = Query(None),
+    date_from: Optional[str] = Query(None),
+    date_to: Optional[str] = Query(None),
+    icp: Optional[str] = Query(None),
+    vertical: Optional[str] = Query(None),
+    opportunity_stage: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    f = _filters_dict(
+        product_area=product_area, insight_category=insight_category,
+        account_name=account_name, date_from=date_from, date_to=date_to,
+        icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+    )
+    rows = get_insights_by_vertical(db, f)
+    return [VerticalCount(**r) for r in rows]
+
+
+@router.get("/by-opportunity-stage", response_model=list[OpportunityStageCount])
+def insights_by_opportunity_stage(
+    product_area: Optional[str] = Query(None),
+    insight_category: Optional[str] = Query(None),
+    account_name: Optional[str] = Query(None),
+    date_from: Optional[str] = Query(None),
+    date_to: Optional[str] = Query(None),
+    icp: Optional[str] = Query(None),
+    vertical: Optional[str] = Query(None),
+    opportunity_stage: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    f = _filters_dict(
+        product_area=product_area, insight_category=insight_category,
+        account_name=account_name, date_from=date_from, date_to=date_to,
+        icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+    )
+    rows = get_insights_by_opportunity_stage(db, f)
+    return [OpportunityStageCount(**r) for r in rows]
+
+
+@router.get("/priority-matrix", response_model=list[PriorityMatrixPoint])
+def priority_matrix(
+    product_area: Optional[str] = Query(None),
+    insight_category: Optional[str] = Query(None),
+    account_name: Optional[str] = Query(None),
+    date_from: Optional[str] = Query(None),
+    date_to: Optional[str] = Query(None),
+    icp: Optional[str] = Query(None),
+    vertical: Optional[str] = Query(None),
+    opportunity_stage: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    f = _filters_dict(
+        product_area=product_area, insight_category=insight_category,
+        account_name=account_name, date_from=date_from, date_to=date_to,
+        icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+    )
+    rows = get_priority_matrix(db, f)
+    return [PriorityMatrixPoint(**r) for r in rows]

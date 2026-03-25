@@ -15,7 +15,10 @@ from app.config import settings  # noqa: E402
 from app.db import engine, SessionLocal, create_all  # noqa: E402
 from app.models.insight import Insight  # noqa: E402
 
+# Check multiple paths: repo root (local dev) and /data (Docker mount)
 INSIGHTS_JSON = ROOT / "data" / "output" / "insights.json"
+if not INSIGHTS_JSON.exists():
+    INSIGHTS_JSON = Path("/data/output/insights.json")
 
 # ---------------------------------------------------------------------------
 # Sample data generator
@@ -106,9 +109,68 @@ def generate_sample_insights() -> list[dict]:
     return insights
 
 
+STAGE_WEIGHTS = {
+    "Closed Won": 10, "Negotiation": 8, "Proposal": 7, "Capacity Review": 6,
+    "Discovery": 3, "Prospecting": 2, "New": 1,
+}
+
+CATEGORY_URGENCY = {
+    "Customer Requirements (Blocker)": 10, "Capacity Issues": 8, "Issues": 7,
+    "Process / Operational Friction": 6, "Customer Requirements (Enhancement)": 5,
+    "Capacity": 5, "Competition / Alternatives": 5, "Pricing / Terms": 4,
+    "Education Gaps": 3, "Success Pattern / Win Signal": 2, "GTM / Partnership": 2,
+    "Product Fit / Scope": 2, "Null": 1,
+}
+
+TIER_MULTIPLIERS = {
+    "Top Account": 3.0, "Strategic": 3.0, "Growth": 2.0, "Standard": 1.0,
+}
+
+
+def compute_priority_score(row):
+    """Compute a RICE-inspired priority score from account enrichment data.
+
+    Uses log-scale for opportunity amount to differentiate across wide ranges
+    ($10K to $10M+). Scores range roughly from 0.1 to ~50 for top-priority items.
+    """
+    import math
+
+    opp = row.get("opportunity_amount") or 0
+    # Log-scale: $1K→1, $10K→2.3, $100K→3.5, $1M→4.6, $10M→5.8, capped at 10
+    opp_score = min(10, max(1, math.log10(max(opp, 1)) - 2)) if opp > 0 else 1
+
+    stage = row.get("opportunity_stage") or ""
+    stage_score = STAGE_WEIGHTS.get(stage, 3)
+
+    revenue = row.get("total_revenue") or 0
+    won_count = row.get("closed_won_opp_count") or 0
+    engagement_score = min(10, 1 + (math.log10(max(revenue, 1)) - 2 if revenue > 100 else 0) + won_count * 0.5)
+
+    cat = row.get("insight_category") or ""
+    cat_score = CATEGORY_URGENCY.get(cat, 3)
+
+    tier = row.get("account_priority_group") or "Standard"
+    multiplier = TIER_MULTIPLIERS.get(tier, 1.0)
+
+    raw = (opp_score * stage_score * engagement_score * cat_score * multiplier) / 100
+    return round(raw, 2)
+
+
+def compute_urgency_level(row):
+    cat = row.get("insight_category") or ""
+    score = CATEGORY_URGENCY.get(cat, 3)
+    if score >= 8:
+        return "High"
+    elif score >= 5:
+        return "Medium"
+    return "Low"
+
+
 def load_insights(data: list[dict], session) -> int:
     count = 0
     for row in data:
+        priority = compute_priority_score(row)
+        urgency = compute_urgency_level(row)
         insight = Insight(
             id=uuid.uuid4(),
             account_name=row.get("account_name") or "Unknown",
@@ -125,6 +187,22 @@ def load_insights(data: list[dict], session) -> int:
             comments=row.get("comments"),
             dedup_group_key=row.get("dedup_group_key"),
             unique_insight_status=row.get("unique_insight_status", "Key Record"),
+            # V2 account enrichment
+            icp=row.get("icp"),
+            account_priority_group=row.get("account_priority_group"),
+            vertical=row.get("vertical"),
+            use_case=row.get("use_case"),
+            workloads=row.get("workloads"),
+            opportunity_stage=row.get("opportunity_stage"),
+            opportunity_amount=row.get("opportunity_amount"),
+            gpu_types=row.get("gpu_types"),
+            competitors_mentioned=row.get("competitors_mentioned"),
+            total_revenue=row.get("total_revenue"),
+            most_recent_revenue_month=row.get("most_recent_revenue_month"),
+            closed_won_opp_count=row.get("closed_won_opp_count"),
+            # Computed
+            priority_score=priority,
+            urgency_level=urgency,
         )
         session.add(insight)
         count += 1
@@ -140,9 +218,9 @@ def main():
     try:
         existing = session.query(Insight).count()
         if existing > 0:
-            print(f"Database already has {existing} insights. Skipping seed.")
-            print("To re-seed, truncate the insights table first.")
-            return
+            print(f"Database has {existing} insights. Clearing for re-seed...")
+            session.query(Insight).delete()
+            session.commit()
 
         if INSIGHTS_JSON.exists():
             print(f"Loading insights from {INSIGHTS_JSON}")

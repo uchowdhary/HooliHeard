@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Index, String, Text, text
+from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Index, Integer, String, Text, text
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db import Base
@@ -29,6 +29,24 @@ class Insight(Base):
     unique_insight_status = Column(String(20), default="Key Record")
     pipeline_run_id = Column(UUID(as_uuid=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    # V2 account enrichment fields
+    icp = Column(String(100), nullable=True)
+    account_priority_group = Column(String(100), nullable=True)
+    vertical = Column(String(100), nullable=True)
+    use_case = Column(Text, nullable=True)
+    workloads = Column(Text, nullable=True)
+    opportunity_stage = Column(String(100), nullable=True)
+    opportunity_amount = Column(Float, nullable=True)
+    gpu_types = Column(Text, nullable=True)
+    competitors_mentioned = Column(Text, nullable=True)
+    total_revenue = Column(Float, nullable=True)
+    most_recent_revenue_month = Column(String(50), nullable=True)
+    closed_won_opp_count = Column(Integer, nullable=True)
+
+    # Computed priority fields
+    priority_score = Column(Float, nullable=True)
+    urgency_level = Column(String(20), nullable=True)
 
     __table_args__ = (
         Index("ix_insights_account_name", "account_name"),

@@ -20,6 +20,22 @@ class InsightBase(BaseModel):
     comments: Optional[str] = None
     dedup_group_key: Optional[str] = None
     unique_insight_status: str = "Key Record"
+    # V2 account enrichment
+    icp: Optional[str] = None
+    account_priority_group: Optional[str] = None
+    vertical: Optional[str] = None
+    use_case: Optional[str] = None
+    workloads: Optional[str] = None
+    opportunity_stage: Optional[str] = None
+    opportunity_amount: Optional[float] = None
+    gpu_types: Optional[str] = None
+    competitors_mentioned: Optional[str] = None
+    total_revenue: Optional[float] = None
+    most_recent_revenue_month: Optional[str] = None
+    closed_won_opp_count: Optional[int] = None
+    # Computed
+    priority_score: Optional[float] = None
+    urgency_level: Optional[str] = None
 
 
 class InsightCreate(InsightBase):
@@ -52,5 +68,10 @@ class InsightFilters(BaseModel):
     date_from: Optional[date] = None
     date_to: Optional[date] = None
     unique_insight_status: Optional[str] = None
+    icp: Optional[str] = None
+    vertical: Optional[str] = None
+    opportunity_stage: Optional[str] = None
+    min_priority_score: Optional[float] = None
+    sort_by: Optional[str] = None
     page: int = Field(default=1, ge=1)
     page_size: int = Field(default=50, ge=1, le=200)

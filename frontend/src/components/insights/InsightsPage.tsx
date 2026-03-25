@@ -11,8 +11,10 @@ export function InsightsPage() {
   const [filters, setFilters] = useState<IFilters>({
     page: 1,
     page_size: 20,
+    sort_by: "priority_score",
   });
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const { data, isLoading, isError, error, refetch } = useInsights(filters);
   const detail = useInsight(selectedId);
@@ -21,12 +23,29 @@ export function InsightsPage() {
     setSelectedId(insight.id);
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const { exportInsightsCsv } = await import("@/api/insights");
+      const blob = await exportInsightsCsv(filters);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "insights_export.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // silently fail
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="flex gap-6">
       <InsightFilters filters={filters} onChange={setFilters} />
 
       <div className="flex-1 space-y-4">
-        {/* Error */}
         {isError && (
           <ErrorAlert
             message={String(error)}
@@ -45,6 +64,13 @@ export function InsightsPage() {
                   : ""}
             </p>
           </div>
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50 transition-colors"
+          >
+            {exporting ? "Exporting..." : "Export CSV"}
+          </button>
         </div>
 
         {/* Table */}

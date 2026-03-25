@@ -16,16 +16,13 @@ def list_accounts(
     q: Optional[str] = Query(None, description="Search account name"),
     db: Session = Depends(get_db),
 ):
-    query = (
-        db.query(
-            Insight.account_name,
-            func.count(Insight.id).label("insight_count"),
-        )
-        .group_by(Insight.account_name)
+    query = db.query(
+        Insight.account_name,
+        func.count(Insight.id).label("insight_count"),
     )
     if q:
         query = query.filter(Insight.account_name.ilike(f"%{q}%"))
-    rows = query.order_by(func.count(Insight.id).desc()).all()
+    rows = query.group_by(Insight.account_name).order_by(func.count(Insight.id).desc()).all()
     return [{"account_name": r[0], "insight_count": r[1]} for r in rows]
 
 

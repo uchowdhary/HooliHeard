@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface Column<T> {
   key: string;
   header: string;
-  render: (row: T) => React.ReactNode;
+  render: (row: T) => ReactNode;
   sortable?: boolean;
   sortKey?: (row: T) => string | number;
   width?: string;

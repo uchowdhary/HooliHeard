@@ -6,19 +6,51 @@ interface Props {
   onChange: (filters: IFilters) => void;
 }
 
+const ICP_OPTIONS = ["AI Enterprise", "AI Native", "Enterprise", "SMB"];
+const SORT_OPTIONS = [
+  { label: "Date (newest)", value: "date_of_record" },
+  { label: "Priority (highest)", value: "priority_score" },
+  { label: "Opportunity $ (highest)", value: "opportunity_amount" },
+  { label: "Revenue (highest)", value: "total_revenue" },
+  { label: "Account name", value: "account_name" },
+];
+
 export function InsightFilters({ filters, onChange }: Props) {
-  const update = (key: keyof IFilters, value: string) => {
-    onChange({ ...filters, [key]: value || undefined, page: 1 });
+  const update = (key: keyof IFilters, value: string | number) => {
+    // Use strict check: empty string clears, but 0 is a valid value
+    const resolved = value === "" ? undefined : value;
+    onChange({ ...filters, [key]: resolved, page: 1 });
   };
 
   const clear = () => {
-    onChange({ page: 1, page_size: 20 });
+    onChange({ page: 1, page_size: 20, sort_by: "priority_score" });
   };
+
+  const selectClass =
+    "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
 
   return (
     <div className="w-64 shrink-0 space-y-5">
       <div className="card p-5 space-y-5">
         <h3 className="text-sm font-semibold text-slate-900">Filters</h3>
+
+        {/* Sort */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-slate-500">
+            Sort By
+          </label>
+          <select
+            value={filters.sort_by ?? ""}
+            onChange={(e) => update("sort_by", e.target.value)}
+            className={selectClass}
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {/* Product Area */}
         <div>
@@ -28,7 +60,7 @@ export function InsightFilters({ filters, onChange }: Props) {
           <select
             value={filters.product_area ?? ""}
             onChange={(e) => update("product_area", e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={selectClass}
           >
             <option value="">All</option>
             {PRODUCT_AREAS.map((pa) => (
@@ -47,12 +79,31 @@ export function InsightFilters({ filters, onChange }: Props) {
           <select
             value={filters.insight_category ?? ""}
             onChange={(e) => update("insight_category", e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={selectClass}
           >
             <option value="">All</option>
             {INSIGHT_CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* ICP Tier */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-slate-500">
+            ICP Tier
+          </label>
+          <select
+            value={filters.icp ?? ""}
+            onChange={(e) => update("icp", e.target.value)}
+            className={selectClass}
+          >
+            <option value="">All</option>
+            {ICP_OPTIONS.map((t) => (
+              <option key={t} value={t}>
+                {t}
               </option>
             ))}
           </select>
@@ -68,7 +119,7 @@ export function InsightFilters({ filters, onChange }: Props) {
             placeholder="Search accounts..."
             value={filters.account_name ?? ""}
             onChange={(e) => update("account_name", e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={selectClass}
           />
         </div>
 
@@ -81,7 +132,7 @@ export function InsightFilters({ filters, onChange }: Props) {
             type="date"
             value={filters.date_from ?? ""}
             onChange={(e) => update("date_from", e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={selectClass}
           />
         </div>
         <div>
@@ -92,7 +143,7 @@ export function InsightFilters({ filters, onChange }: Props) {
             type="date"
             value={filters.date_to ?? ""}
             onChange={(e) => update("date_to", e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={selectClass}
           />
         </div>
 

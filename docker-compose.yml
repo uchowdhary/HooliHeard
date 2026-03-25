@@ -22,10 +22,33 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    env_file:
-      - .env
     environment:
       DATABASE_URL: postgresql://hooli:hooli@db:5432/hooliheard
+    volumes:
+      - ./data:/data
+
+  seed:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://hooli:hooli@db:5432/hooliheard
+    volumes:
+      - ./scripts:/scripts
+      - ./data:/data
+    command: python3 /scripts/seed_db.py
+    profiles:
+      - seed
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_TARGET: http://backend:8000
+    depends_on:
+      - backend
 
 volumes:
   pgdata:

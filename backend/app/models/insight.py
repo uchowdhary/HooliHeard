@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Index, String, Text
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Index, String, Text, text
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db import Base
@@ -10,7 +10,7 @@ from app.db import Base
 class Insight(Base):
     __tablename__ = "insights"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default="gen_random_uuid()")
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()"))
     signal_id = Column(UUID(as_uuid=True), ForeignKey("signals.id"), nullable=True)
     account_id = Column(UUID(as_uuid=True), ForeignKey("accounts.id"), nullable=True)
     account_name = Column(String(255), nullable=False)

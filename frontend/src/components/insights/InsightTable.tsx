@@ -53,7 +53,7 @@ const columns: Column<Insight>[] = [
     width: "80px",
     render: (row) => {
       const tool = SOURCE_TOOLS[row.source_tool];
-      if (\!tool) return <span className="text-xs text-slate-500">{row.source_tool}</span>;
+      if (!tool) return <span className="text-xs text-slate-500">{row.source_tool}</span>;
       return (
         <span
           className="inline-flex h-6 w-6 items-center justify-center rounded text-[10px] font-bold text-white"
@@ -82,7 +82,7 @@ const columns: Column<Insight>[] = [
     header: "Status",
     width: "100px",
     render: (row) =>
-      row.unique_insight_status === "key_record" ? (
+      row.unique_insight_status === "Key Record" ? (
         <Badge label="Key" color="#10B981" variant="subtle" />
       ) : (
         <Badge label="Duplicate" color="#94a3b8" variant="subtle" />

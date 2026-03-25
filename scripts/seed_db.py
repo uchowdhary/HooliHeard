@@ -21,54 +21,60 @@ INSIGHTS_JSON = ROOT / "data" / "output" / "insights.json"
 # Sample data generator
 # ---------------------------------------------------------------------------
 
-PRODUCT_AREAS = ["Kubernetes", "Networking", "Storage", "Inference", "HPC"]
+PRODUCT_AREAS = ["Infra", "CKS", "Platform", "AI Services", "W&B"]
 SUBCATEGORIES = {
-    "Kubernetes": ["Cluster Management", "Autoscaling", "Node Pools"],
-    "Networking": ["Load Balancing", "VPC Peering", "Bandwidth"],
-    "Storage": ["Block Storage", "Object Storage", "Snapshots"],
-    "Inference": ["Model Serving", "Batch Inference", "GPU Scheduling"],
-    "HPC": ["Job Scheduling", "MPI Support", "Large-scale Training"],
+    "Infra": ["Compute", "Storage", "Networking"],
+    "CKS": ["BMaaS", "CKS", "Consumption Models"],
+    "Platform": ["Security & Compliance", "Console / API / Terraform", "Observability"],
+    "AI Services": ["SUNK / Training", "Inference", "RL / Evals"],
+    "W&B": ["n/a"],
 }
-CATEGORIES = ["Feature Request", "Pain Point", "Churn Risk", "Praise", "Bug Report"]
-SOURCES = ["gong", "salesforce", "jira", "slack", "qualtrics"]
-ACCOUNTS = [
-    "Acme Corp", "Globex Inc", "Initech", "Umbrella Corp", "Stark Industries",
-    "Wayne Enterprises", "Cyberdyne Systems", "Soylent Corp", "Tyrell Corp", "Aperture Science",
+CATEGORIES = [
+    "Capacity", "Capacity Issues", "Pricing / Terms",
+    "Customer Requirements (Enhancement)", "Customer Requirements (Blocker)",
+    "Issues", "Education Gaps", "Competition / Alternatives",
+    "Success Pattern / Win Signal", "Process / Operational Friction",
 ]
-ROLES = ["CTO", "VP Engineering", "ML Engineer", "DevOps Lead", "Platform Engineer"]
-CONV_TYPES = ["Discovery Call", "QBR", "Support Ticket", "Survey Response", "Slack Thread"]
+SOURCES = ["Gong", "Salesforce", "Jira", "Slack", "Qualtrics"]
+SOURCE_TYPES = {"Gong": "VoF", "Salesforce": "Loss", "Jira": "CX", "Slack": "CX", "Qualtrics": "Survey"}
+ACCOUNTS = [
+    "Anthropic", "Meta", "Microsoft", "Mistral AI", "Cohere",
+    "Databricks", "Scale AI", "Hugging Face", "Stability AI", "Perplexity",
+]
+ROLES = ["AE", "SA", "TSM", "CX", None]
+CONV_TYPES = ["AE", "SA", "TSM"]
 
 SAMPLE_INSIGHTS = [
-    ("Kubernetes", "Autoscaling", "Feature Request", "Need HPA support for custom GPU metrics to autoscale inference workloads"),
-    ("Kubernetes", "Cluster Management", "Pain Point", "Cluster upgrades cause 5-10 min downtime for running pods"),
-    ("Kubernetes", "Node Pools", "Feature Request", "Want mixed GPU node pools with spot instance support"),
-    ("Networking", "Load Balancing", "Bug Report", "L7 load balancer drops WebSocket connections after 60s idle"),
-    ("Networking", "VPC Peering", "Pain Point", "Cross-region VPC peering latency is 3x higher than expected"),
-    ("Networking", "Bandwidth", "Feature Request", "Need 400Gbps InfiniBand option for large training jobs"),
-    ("Storage", "Block Storage", "Pain Point", "IOPS throttling on block storage during checkpoint writes"),
-    ("Storage", "Object Storage", "Feature Request", "S3-compatible object storage needs versioning support"),
-    ("Storage", "Snapshots", "Praise", "Snapshot restore is incredibly fast, saved us during an incident"),
-    ("Inference", "Model Serving", "Feature Request", "Need built-in A/B testing for model endpoints"),
-    ("Inference", "Batch Inference", "Pain Point", "Batch inference jobs fail silently when GPU OOM occurs"),
-    ("Inference", "GPU Scheduling", "Churn Risk", "Considering alternatives due to GPU availability SLA misses"),
-    ("Inference", "Model Serving", "Feature Request", "Want streaming response support for LLM serving endpoints"),
-    ("Inference", "GPU Scheduling", "Pain Point", "H100 availability in ORD1 has been inconsistent for 3 weeks"),
-    ("HPC", "Job Scheduling", "Feature Request", "Need priority queues for different teams within same org"),
-    ("HPC", "MPI Support", "Bug Report", "MPI all-reduce fails intermittently on 256+ node jobs"),
-    ("HPC", "Large-scale Training", "Praise", "Training a 70B model was seamless on the platform"),
-    ("HPC", "Job Scheduling", "Pain Point", "No way to preempt low-priority jobs when urgent work comes in"),
-    ("Kubernetes", "Autoscaling", "Churn Risk", "If autoscaling doesn't improve by Q2 we will evaluate other providers"),
-    ("Storage", "Block Storage", "Feature Request", "Need NVMe-backed block storage tier for database workloads"),
-    ("Networking", "Load Balancing", "Feature Request", "Want gRPC health check support on load balancers"),
-    ("Inference", "Batch Inference", "Feature Request", "Need spot GPU support for cost-effective batch inference"),
-    ("Kubernetes", "Cluster Management", "Praise", "The new cluster dashboard is a huge improvement"),
-    ("HPC", "Large-scale Training", "Pain Point", "Checkpoint storage costs are too high for multi-day training runs"),
-    ("Storage", "Object Storage", "Bug Report", "Multipart upload fails for files over 50GB"),
-    ("Networking", "Bandwidth", "Praise", "200Gbps throughput between nodes is excellent for our distributed training"),
-    ("Inference", "Model Serving", "Pain Point", "Cold start times for serverless inference are too high for production"),
-    ("Kubernetes", "Node Pools", "Bug Report", "Taint propagation is broken when adding nodes to existing pool"),
-    ("HPC", "MPI Support", "Feature Request", "Need NCCL 2.19 support for better multi-node communication"),
-    ("Storage", "Snapshots", "Feature Request", "Want scheduled automatic snapshots with retention policies"),
+    ("Infra", "Compute", "Capacity", "Customer needs 512 H100s in ORD1 by end of Q2 for large-scale training run"),
+    ("Infra", "Compute", "Capacity Issues", "Reserved H100 instances in LGA1 unavailable for 3 consecutive weeks"),
+    ("Infra", "Networking", "Customer Requirements (Enhancement)", "Need 400Gbps InfiniBand for multi-node training across racks"),
+    ("Infra", "Storage", "Issues", "IOPS throttling on block storage during checkpoint writes causes job failures"),
+    ("Infra", "Compute", "Competition / Alternatives", "Customer evaluating Lambda Labs due to H200 availability gap"),
+    ("CKS", "CKS", "Customer Requirements (Enhancement)", "Need HPA support for custom GPU metrics to autoscale inference pods"),
+    ("CKS", "CKS", "Issues", "Cluster upgrades cause 5-10 min downtime for running inference workloads"),
+    ("CKS", "BMaaS", "Customer Requirements (Blocker)", "Bare metal access required for custom CUDA driver versions — blocking expansion"),
+    ("CKS", "Consumption Models", "Pricing / Terms", "Need committed-use discount structure for 1-year GPU reservations"),
+    ("CKS", "CKS", "Education Gaps", "Customer confused about node pool configuration for mixed GPU types"),
+    ("Platform", "Console / API / Terraform", "Customer Requirements (Enhancement)", "Terraform provider missing support for CKS node pool configuration"),
+    ("Platform", "Security & Compliance", "Customer Requirements (Blocker)", "SOC2 Type II audit logs required for API access — blocking security review"),
+    ("Platform", "Observability", "Customer Requirements (Enhancement)", "Need capacity alerts when reserved instances are running low"),
+    ("Platform", "Console / API / Terraform", "Issues", "Console returns 500 error when creating clusters with 100+ nodes"),
+    ("Platform", "Security & Compliance", "Process / Operational Friction", "IAM role provisioning takes 3+ days through manual process"),
+    ("AI Services", "Inference", "Customer Requirements (Enhancement)", "Need built-in A/B testing for model serving endpoints"),
+    ("AI Services", "Inference", "Issues", "Cold start times for serverless inference endpoints exceed 30s SLA"),
+    ("AI Services", "SUNK / Training", "Success Pattern / Win Signal", "Training 70B model was seamless — customer expanding from 256 to 1024 GPUs"),
+    ("AI Services", "Inference", "Competition / Alternatives", "Customer comparing CW inference latency against Anyscale and Modal"),
+    ("AI Services", "RL / Evals", "Customer Requirements (Enhancement)", "Need integrated eval framework for RLHF pipeline on CW infrastructure"),
+    ("W&B", "n/a", "Customer Requirements (Enhancement)", "Want W&B experiment tracking deeply integrated with CW training jobs"),
+    ("Infra", "Compute", "Pricing / Terms", "Customer requesting spot instance pricing for non-critical batch workloads"),
+    ("CKS", "CKS", "Success Pattern / Win Signal", "New cluster dashboard significantly reduced customer onboarding time"),
+    ("Platform", "Observability", "Education Gaps", "Customer unaware of existing Prometheus metrics endpoint for GPU monitoring"),
+    ("AI Services", "Inference", "Capacity Issues", "GPU availability for A100-80GB in LGA1 has been inconsistent for production inference"),
+    ("Infra", "Networking", "Success Pattern / Win Signal", "200Gbps node-to-node throughput excellent for distributed training workloads"),
+    ("Platform", "Console / API / Terraform", "Customer Requirements (Enhancement)", "Need API rate limit increase for automated cluster management scripts"),
+    ("AI Services", "SUNK / Training", "Customer Requirements (Blocker)", "Multi-node training requires manual NCCL configuration — blocking adoption"),
+    ("CKS", "Consumption Models", "Competition / Alternatives", "Customer evaluating AWS Trainium due to more flexible commitment terms"),
+    ("Infra", "Storage", "Customer Requirements (Enhancement)", "Need NVMe-backed storage tier for database workloads alongside GPU compute"),
 ]
 
 
@@ -105,7 +111,7 @@ def load_insights(data: list[dict], session) -> int:
     for row in data:
         insight = Insight(
             id=uuid.uuid4(),
-            account_name=row["account_name"],
+            account_name=row.get("account_name") or "Unknown",
             insight_text=row["insight_text"],
             product_area=row["product_area"],
             product_subcategory=row.get("product_subcategory", "General"),

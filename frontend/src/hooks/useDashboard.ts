@@ -26,19 +26,19 @@ const MOCK_BY_AREA: AreaCount[] = [
 ];
 
 const MOCK_BY_CATEGORY: CategoryCount[] = [
-  { insight_category: "Feature Request", count: 198 },
-  { insight_category: "Bug Report", count: 142 },
-  { insight_category: "Performance Issue", count: 127 },
-  { insight_category: "Pricing Concern", count: 96 },
-  { insight_category: "Documentation Gap", count: 89 },
-  { insight_category: "Onboarding Friction", count: 84 },
-  { insight_category: "Integration Need", count: 112 },
-  { insight_category: "Scalability Concern", count: 78 },
-  { insight_category: "Security Requirement", count: 71 },
-  { insight_category: "UX Improvement", count: 63 },
-  { insight_category: "API Enhancement", count: 58 },
-  { insight_category: "Compliance Need", count: 74 },
-  { insight_category: "Migration Blocker", count: 55 },
+  { insight_category: "Customer Requirements (Enhancement)", count: 198 },
+  { insight_category: "Issues", count: 142 },
+  { insight_category: "Capacity Issues", count: 127 },
+  { insight_category: "Pricing / Terms", count: 96 },
+  { insight_category: "Education Gaps", count: 89 },
+  { insight_category: "Process / Operational Friction", count: 84 },
+  { insight_category: "Competition / Alternatives", count: 112 },
+  { insight_category: "Capacity", count: 78 },
+  { insight_category: "Customer Requirements (Blocker)", count: 71 },
+  { insight_category: "Success Pattern / Win Signal", count: 63 },
+  { insight_category: "GTM / Partnership", count: 58 },
+  { insight_category: "Product Fit / Scope", count: 74 },
+  { insight_category: "Null", count: 55 },
 ];
 
 const MOCK_BY_ACCOUNT: AccountCount[] = [
@@ -69,7 +69,7 @@ const MOCK_TREND: TrendPoint[] = [
   { week: "2026-03-23", count: 95 },
 ];
 
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 function delay<T>(data: T, ms = 300): Promise<T> {
   return new Promise((resolve) => setTimeout(() => resolve(data), ms));
@@ -77,12 +77,12 @@ function delay<T>(data: T, ms = 300): Promise<T> {
 
 // ---- Hooks ----
 
-export function useSummary() {
+export function useSummary(filters?: InsightFilters) {
   return useQuery<DashboardSummary>({
-    queryKey: ["dashboard", "summary"],
+    queryKey: ["dashboard", "summary", filters],
     queryFn: () => {
       if (USE_MOCK) return delay(MOCK_SUMMARY);
-      return import("@/api/dashboard").then((m) => m.fetchSummary());
+      return import("@/api/dashboard").then((m) => m.fetchSummary(filters));
     },
   });
 }

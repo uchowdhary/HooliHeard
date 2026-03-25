@@ -15,28 +15,28 @@ export const PRODUCT_AREA_COLORS: Record<string, string> = {
 };
 
 export const INSIGHT_CATEGORIES = [
-  "Feature Request",
-  "Bug Report",
-  "Performance Issue",
-  "Pricing Concern",
-  "Documentation Gap",
-  "Onboarding Friction",
-  "Integration Need",
-  "Scalability Concern",
-  "Security Requirement",
-  "UX Improvement",
-  "API Enhancement",
-  "Compliance Need",
-  "Migration Blocker",
+  "Capacity",
+  "Capacity Issues",
+  "Pricing / Terms",
+  "Customer Requirements (Enhancement)",
+  "Customer Requirements (Blocker)",
+  "Issues",
+  "Education Gaps",
+  "Null",
+  "Product Fit / Scope",
+  "Competition / Alternatives",
+  "GTM / Partnership",
+  "Success Pattern / Win Signal",
+  "Process / Operational Friction",
 ] as const;
 
 export const SOURCE_TOOLS: Record<
   string,
   { icon: string; color: string; label: string }
 > = {
-  gong: { icon: "G", color: "#7C3AED", label: "Gong" },
-  salesforce: { icon: "S", color: "#00A1E0", label: "Salesforce" },
-  jira: { icon: "J", color: "#0052CC", label: "Jira" },
-  slack: { icon: "#", color: "#E01E5A", label: "Slack" },
-  qualtrics: { icon: "Q", color: "#1BAD4F", label: "Qualtrics" },
+  Gong: { icon: "G", color: "#7C3AED", label: "Gong" },
+  Salesforce: { icon: "S", color: "#00A1E0", label: "Salesforce" },
+  Jira: { icon: "J", color: "#0052CC", label: "Jira" },
+  Slack: { icon: "#", color: "#E01E5A", label: "Slack" },
+  Qualtrics: { icon: "Q", color: "#1BAD4F", label: "Qualtrics" },
 };

@@ -55,12 +55,12 @@ export function InsightDetail({ insight, loading, onClose }: Props) {
                 <Badge label={insight.insight_category} />
                 <Badge
                   label={
-                    insight.unique_insight_status === "key_record"
+                    insight.unique_insight_status === "Key Record"
                       ? "Key Record"
                       : "Duplicate"
                   }
                   color={
-                    insight.unique_insight_status === "key_record"
+                    insight.unique_insight_status === "Key Record"
                       ? "#10B981"
                       : "#94a3b8"
                   }

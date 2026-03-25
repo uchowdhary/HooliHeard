@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, JSON, String, Text
+from sqlalchemy import Column, DateTime, JSON, String, Text, text
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db import Base
@@ -10,7 +10,7 @@ from app.db import Base
 class Signal(Base):
     __tablename__ = "signals"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default="gen_random_uuid()")
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()"))
     source_tool = Column(String(50), nullable=False)
     source_type = Column(String(50))
     source_link = Column(Text)

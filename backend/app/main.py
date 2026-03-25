@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
-from app.db import create_all
+from app.db import create_all, get_db
 
 
 @asynccontextmanager
@@ -22,7 +24,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -40,3 +42,13 @@ app.include_router(accounts_router)
 @app.get("/")
 def root():
     return {"status": "ok", "project": "Hooli Heard"}
+
+
+@app.get("/api/health")
+def health(db: Session = Depends(get_db)):
+    """Health check — verifies DB connectivity."""
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "database": str(e)}

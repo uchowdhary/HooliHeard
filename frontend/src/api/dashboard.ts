@@ -8,8 +8,13 @@ import type {
 import type { InsightFilters } from "@/types/insight";
 import { apiFetch, buildQueryString } from "./client";
 
-export async function fetchSummary(): Promise<DashboardSummary> {
-  return apiFetch<DashboardSummary>("/dashboard/summary");
+export async function fetchSummary(
+  filters?: InsightFilters,
+): Promise<DashboardSummary> {
+  const qs = buildQueryString(
+    (filters ?? {}) as Record<string, string | number | undefined>,
+  );
+  return apiFetch<DashboardSummary>(`/dashboard/summary${qs}`);
 }
 
 export async function fetchByArea(

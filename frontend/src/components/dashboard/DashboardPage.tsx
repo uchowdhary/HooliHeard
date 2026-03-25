@@ -1,5 +1,6 @@
 import { useSearchParams } from "react-router-dom";
 import { StatCard } from "@/components/shared/Card";
+import { ErrorAlert } from "@/components/shared/ErrorAlert";
 import { FilterBar } from "./FilterBar";
 import { InsightsByArea } from "./InsightsByArea";
 import { InsightsByCategory } from "./InsightsByCategory";
@@ -23,16 +24,31 @@ export function DashboardPage() {
     insight_category: searchParams.get("insight_category") ?? undefined,
   };
 
-  const summary = useSummary();
+  const summary = useSummary(filters);
   const byArea = useByArea(filters);
   const byCategory = useByCategory(filters);
   const byAccount = useByAccount(filters);
   const trend = useTrend(filters);
 
+  const hasError = summary.isError || byArea.isError;
+
   return (
     <div className="space-y-6">
       {/* Filters */}
       <FilterBar />
+
+      {hasError && (
+        <ErrorAlert
+          message={String(summary.error ?? byArea.error ?? "Unknown error")}
+          onRetry={() => {
+            summary.refetch();
+            byArea.refetch();
+            byCategory.refetch();
+            byAccount.refetch();
+            trend.refetch();
+          }}
+        />
+      )}
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

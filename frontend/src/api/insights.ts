@@ -15,8 +15,9 @@ export async function fetchInsight(id: string): Promise<Insight> {
 export async function exportInsightsCsv(
   filters: InsightFilters,
 ): Promise<Blob> {
+  const baseUrl = import.meta.env.VITE_API_URL || "/api";
   const qs = buildQueryString(filters as Record<string, string | number | undefined>);
-  const res = await fetch(`/api/insights/export${qs}`);
+  const res = await fetch(`${baseUrl}/insights/export${qs}`);
   if (!res.ok) throw new Error("Export failed");
   return res.blob();
 }

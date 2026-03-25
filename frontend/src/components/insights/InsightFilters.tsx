@@ -104,7 +104,7 @@ export function InsightFilters({ filters, onChange }: Props) {
           <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
             {[
               { label: "All", value: "" },
-              { label: "Key Only", value: "key_record" },
+              { label: "Key Only", value: "Key Record" },
             ].map((opt) => (
               <button
                 key={opt.value}

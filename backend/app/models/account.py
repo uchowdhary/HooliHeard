@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Numeric, String, Text
+from sqlalchemy import Column, DateTime, Numeric, String, Text, text
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db import Base
@@ -10,7 +10,7 @@ from app.db import Base
 class Account(Base):
     __tablename__ = "accounts"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default="gen_random_uuid()")
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=text("gen_random_uuid()"))
     sfdc_account_id = Column(String(18), unique=True, nullable=True)
     account_name = Column(String(255), nullable=False, unique=True)
     icp = Column(String(100))

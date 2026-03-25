@@ -10,18 +10,25 @@ interface StatCardProps {
 }
 
 export function StatCard({ title, value, subtitle, icon, className }: StatCardProps) {
+  const valueStr = String(value);
+  const isLong = valueStr.length > 8;
   return (
-    <div className={cn("card p-6", className)}>
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-slate-500">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900">{value}</p>
+    <div className={cn("card p-4", className)}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-slate-500 truncate">{title}</p>
+          <p className={cn(
+            "mt-1 font-bold text-slate-900 truncate",
+            isLong ? "text-lg" : "text-2xl",
+          )} title={valueStr}>
+            {value}
+          </p>
           {subtitle && (
-            <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+            <p className="mt-0.5 text-xs text-slate-400 truncate">{subtitle}</p>
           )}
         </div>
         {icon && (
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
             {icon}
           </div>
         )}

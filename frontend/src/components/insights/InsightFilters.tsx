@@ -6,7 +6,7 @@ interface Props {
   onChange: (filters: IFilters) => void;
 }
 
-const ICP_OPTIONS = ["AI Enterprise", "AI Native", "Enterprise", "SMB"];
+const ICP_OPTIONS = ["AI Enterprise", "AI Lab", "AI Native", "AI Platform"];
 const SORT_OPTIONS = [
   { label: "Date (newest)", value: "date_of_record" },
   { label: "Priority (highest)", value: "priority_score" },

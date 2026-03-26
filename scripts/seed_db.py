@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Seed the database with insights from data/output/insights.json or generate sample data."""
+"""Seed the database with insights from xlsx, JSON, or generate sample data."""
 
 import json
+import math
 import sys
 import uuid
 from datetime import date, datetime, timezone
@@ -15,130 +16,61 @@ from app.config import settings  # noqa: E402
 from app.db import engine, SessionLocal, create_all  # noqa: E402
 from app.models.insight import Insight  # noqa: E402
 
-# Check multiple paths: repo root (local dev), /data (docker-compose mount), cwd (k8s seed image)
+# --- File discovery ---
+# Try xlsx first (v3), then JSON (v2), then fallback paths
+XLSX_FILE = ROOT / "data" / "output" / "Insights_Combined_2026.xlsx"
 INSIGHTS_JSON = ROOT / "data" / "output" / "insights.json"
 if not INSIGHTS_JSON.exists():
     INSIGHTS_JSON = Path("/data/output/insights.json")
 if not INSIGHTS_JSON.exists():
     INSIGHTS_JSON = Path("insights.json")
 
-# ---------------------------------------------------------------------------
-# Sample data generator
-# ---------------------------------------------------------------------------
+# Also check for xlsx in alternate locations
+if not XLSX_FILE.exists():
+    XLSX_FILE = Path("/data/output/Insights_Combined_2026.xlsx")
+if not XLSX_FILE.exists():
+    XLSX_FILE = Path("Insights_Combined_2026.xlsx")
 
-PRODUCT_AREAS = ["Infra", "CKS", "Platform", "AI Services", "W&B"]
-SUBCATEGORIES = {
-    "Infra": ["Compute", "Storage", "Networking"],
-    "CKS": ["BMaaS", "CKS", "Consumption Models"],
-    "Platform": ["Security & Compliance", "Console / API / Terraform", "Observability"],
-    "AI Services": ["SUNK / Training", "Inference", "RL / Evals"],
-    "W&B": ["n/a"],
-}
-CATEGORIES = [
-    "Capacity", "Capacity Issues", "Pricing / Terms",
-    "Customer Requirements (Enhancement)", "Customer Requirements (Blocker)",
-    "Issues", "Education Gaps", "Competition / Alternatives",
-    "Success Pattern / Win Signal", "Process / Operational Friction",
-]
-SOURCES = ["Gong", "Salesforce", "Jira", "Slack", "Qualtrics"]
-SOURCE_TYPES = {"Gong": "VoF", "Salesforce": "Loss", "Jira": "CX", "Slack": "CX", "Qualtrics": "Survey"}
-ACCOUNTS = [
-    "Anthropic", "Meta", "Microsoft", "Mistral AI", "Cohere",
-    "Databricks", "Scale AI", "Hugging Face", "Stability AI", "Perplexity",
-]
-ROLES = ["AE", "SA", "TSM", "CX", None]
-CONV_TYPES = ["AE", "SA", "TSM"]
-
-SAMPLE_INSIGHTS = [
-    ("Infra", "Compute", "Capacity", "Customer needs 512 H100s in ORD1 by end of Q2 for large-scale training run"),
-    ("Infra", "Compute", "Capacity Issues", "Reserved H100 instances in LGA1 unavailable for 3 consecutive weeks"),
-    ("Infra", "Networking", "Customer Requirements (Enhancement)", "Need 400Gbps InfiniBand for multi-node training across racks"),
-    ("Infra", "Storage", "Issues", "IOPS throttling on block storage during checkpoint writes causes job failures"),
-    ("Infra", "Compute", "Competition / Alternatives", "Customer evaluating Lambda Labs due to H200 availability gap"),
-    ("CKS", "CKS", "Customer Requirements (Enhancement)", "Need HPA support for custom GPU metrics to autoscale inference pods"),
-    ("CKS", "CKS", "Issues", "Cluster upgrades cause 5-10 min downtime for running inference workloads"),
-    ("CKS", "BMaaS", "Customer Requirements (Blocker)", "Bare metal access required for custom CUDA driver versions — blocking expansion"),
-    ("CKS", "Consumption Models", "Pricing / Terms", "Need committed-use discount structure for 1-year GPU reservations"),
-    ("CKS", "CKS", "Education Gaps", "Customer confused about node pool configuration for mixed GPU types"),
-    ("Platform", "Console / API / Terraform", "Customer Requirements (Enhancement)", "Terraform provider missing support for CKS node pool configuration"),
-    ("Platform", "Security & Compliance", "Customer Requirements (Blocker)", "SOC2 Type II audit logs required for API access — blocking security review"),
-    ("Platform", "Observability", "Customer Requirements (Enhancement)", "Need capacity alerts when reserved instances are running low"),
-    ("Platform", "Console / API / Terraform", "Issues", "Console returns 500 error when creating clusters with 100+ nodes"),
-    ("Platform", "Security & Compliance", "Process / Operational Friction", "IAM role provisioning takes 3+ days through manual process"),
-    ("AI Services", "Inference", "Customer Requirements (Enhancement)", "Need built-in A/B testing for model serving endpoints"),
-    ("AI Services", "Inference", "Issues", "Cold start times for serverless inference endpoints exceed 30s SLA"),
-    ("AI Services", "SUNK / Training", "Success Pattern / Win Signal", "Training 70B model was seamless — customer expanding from 256 to 1024 GPUs"),
-    ("AI Services", "Inference", "Competition / Alternatives", "Customer comparing CW inference latency against Anyscale and Modal"),
-    ("AI Services", "RL / Evals", "Customer Requirements (Enhancement)", "Need integrated eval framework for RLHF pipeline on CW infrastructure"),
-    ("W&B", "n/a", "Customer Requirements (Enhancement)", "Want W&B experiment tracking deeply integrated with CW training jobs"),
-    ("Infra", "Compute", "Pricing / Terms", "Customer requesting spot instance pricing for non-critical batch workloads"),
-    ("CKS", "CKS", "Success Pattern / Win Signal", "New cluster dashboard significantly reduced customer onboarding time"),
-    ("Platform", "Observability", "Education Gaps", "Customer unaware of existing Prometheus metrics endpoint for GPU monitoring"),
-    ("AI Services", "Inference", "Capacity Issues", "GPU availability for A100-80GB in LGA1 has been inconsistent for production inference"),
-    ("Infra", "Networking", "Success Pattern / Win Signal", "200Gbps node-to-node throughput excellent for distributed training workloads"),
-    ("Platform", "Console / API / Terraform", "Customer Requirements (Enhancement)", "Need API rate limit increase for automated cluster management scripts"),
-    ("AI Services", "SUNK / Training", "Customer Requirements (Blocker)", "Multi-node training requires manual NCCL configuration — blocking adoption"),
-    ("CKS", "Consumption Models", "Competition / Alternatives", "Customer evaluating AWS Trainium due to more flexible commitment terms"),
-    ("Infra", "Storage", "Customer Requirements (Enhancement)", "Need NVMe-backed storage tier for database workloads alongside GPU compute"),
-]
-
-
-def generate_sample_insights() -> list[dict]:
-    insights = []
-    for i, (area, subcat, category, text) in enumerate(SAMPLE_INSIGHTS):
-        account = ACCOUNTS[i % len(ACCOUNTS)]
-        source = SOURCES[i % len(SOURCES)]
-        role = ROLES[i % len(ROLES)]
-        conv = CONV_TYPES[i % len(CONV_TYPES)]
-        day = 1 + (i % 28)
-        month = 1 + (i % 3)
-        insights.append({
-            "account_name": account,
-            "insight_text": text,
-            "product_area": area,
-            "product_subcategory": subcat,
-            "insight_category": category,
-            "input_data_source": source,
-            "source_tool": source,
-            "source_link": f"https://example.com/{source}/{i+1}",
-            "role_present": role,
-            "conversation_type": conv,
-            "date_of_record": f"2026-{month:02d}-{day:02d}",
-            "comments": None,
-            "dedup_group_key": f"{area}|{subcat}|{account}|{text[:50]}",
-            "unique_insight_status": "Key Record",
-        })
-    return insights
-
+# --- Priority scoring ---
 
 STAGE_WEIGHTS = {
-    "Closed Won": 10, "Negotiation": 8, "Proposal": 7, "Capacity Review": 6,
-    "Discovery": 3, "Prospecting": 2, "New": 1,
+    "Closed Won": 10, "Negotiation": 8, "Negotiations": 8,
+    "Technical Evaluation": 7, "Proposal": 7, "Capacity Review": 6,
+    "Active Discussion / BMaaS": 5, "Active Customer": 5,
+    "Discovery / Prospect": 3, "Discovery": 3, "Prospecting": 2, "New": 1,
+    "Closed Lost": 1,
 }
 
 CATEGORY_URGENCY = {
-    "Customer Requirements (Blocker)": 10, "Capacity Issues": 8, "Issues": 7,
-    "Process / Operational Friction": 6, "Customer Requirements (Enhancement)": 5,
-    "Capacity": 5, "Competition / Alternatives": 5, "Pricing / Terms": 4,
-    "Education Gaps": 3, "Success Pattern / Win Signal": 2, "GTM / Partnership": 2,
-    "Product Fit / Scope": 2, "Null": 1,
+    "Customer Requirements (Blocker)": 10,
+    "CX Requirement": 8,
+    "Capacity Issues": 8,
+    "Issues": 7,
+    "Loss Signal (Capacity)": 7,
+    "Loss Signal (Commercial)": 7,
+    "Loss Signal (Product Model Mismatch)": 7,
+    "Loss Signal (No Response / Stale)": 5,
+    "Loss Signal (Unknown)": 5,
+    "Process / Operational Friction": 6,
+    "Customer Requirements (Enhancement)": 5,
+    "Capacity": 5,
+    "Competition / Alternatives": 5,
+    "Pricing / Terms": 4,
+    "Education Gaps": 3,
+    "GTM / Partnership": 3,
+    "Success Pattern / Win Signal": 2,
+    "Null": 1,
 }
 
 TIER_MULTIPLIERS = {
+    "AI Enterprise": 3.0, "AI Lab": 2.5, "AI Platform": 2.0, "AI Native": 1.5,
     "Top Account": 3.0, "Strategic": 3.0, "Growth": 2.0, "Standard": 1.0,
 }
 
 
 def compute_priority_score(row):
-    """Compute a RICE-inspired priority score from account enrichment data.
-
-    Uses log-scale for opportunity amount to differentiate across wide ranges
-    ($10K to $10M+). Scores range roughly from 0.1 to ~50 for top-priority items.
-    """
-    import math
-
+    """RICE-inspired priority score using log-scale for opportunity amount."""
     opp = row.get("opportunity_amount") or 0
-    # Log-scale: $1K→1, $10K→2.3, $100K→3.5, $1M→4.6, $10M→5.8, capped at 10
     opp_score = min(10, max(1, math.log10(max(opp, 1)) - 2)) if opp > 0 else 1
 
     stage = row.get("opportunity_stage") or ""
@@ -151,7 +83,7 @@ def compute_priority_score(row):
     cat = row.get("insight_category") or ""
     cat_score = CATEGORY_URGENCY.get(cat, 3)
 
-    tier = row.get("account_priority_group") or "Standard"
+    tier = row.get("icp") or row.get("account_priority_group") or "Standard"
     multiplier = TIER_MULTIPLIERS.get(tier, 1.0)
 
     raw = (opp_score * stage_score * engagement_score * cat_score * multiplier) / 100
@@ -168,28 +100,112 @@ def compute_urgency_level(row):
     return "Low"
 
 
+def load_xlsx(path: Path) -> list[dict]:
+    """Load insights from an xlsx file."""
+    import openpyxl
+
+    wb = openpyxl.load_workbook(str(path), read_only=True)
+    ws = wb.active
+
+    rows = list(ws.iter_rows(values_only=True))
+    headers = rows[0]
+    data = []
+
+    # Column name mapping (xlsx header → internal key)
+    COL_MAP = {
+        "Account Name": "account_name",
+        "ICP": "icp",
+        "Vertical": "vertical",
+        "Stage": "opportunity_stage",
+        "Opp Amount ($)": "opportunity_amount",
+        "Use Case": "use_case",
+        "GPU Types": "gpu_types",
+        "Insight": "insight_text",
+        "Product Area": "product_area",
+        "Product Subcategory": "product_subcategory",
+        "Insight Category": "insight_category",
+        "Input Data Source": "input_data_source",
+        "Source Tool": "source_tool",
+        "Source Link": "source_link",
+        "Date of Record": "date_of_record",
+        "Period": "period",
+        "Conversation Type": "conversation_type",
+        "Comments": "comments",
+        "Unique Insight Status": "unique_insight_status",
+    }
+
+    for row in rows[1:]:
+        record = {}
+        for i, header in enumerate(headers):
+            key = COL_MAP.get(header, header)
+            val = row[i] if i < len(row) else None
+            record[key] = val
+
+        # Skip rows with no insight text
+        if not record.get("insight_text"):
+            continue
+
+        # Normalize date
+        d = record.get("date_of_record")
+        if isinstance(d, datetime):
+            record["date_of_record"] = d.date()
+        elif isinstance(d, str):
+            record["date_of_record"] = date.fromisoformat(d[:10])
+        elif d is None:
+            record["date_of_record"] = date.today()
+
+        # Normalize opportunity_amount to float
+        opp = record.get("opportunity_amount")
+        if opp is not None:
+            try:
+                record["opportunity_amount"] = float(opp)
+            except (ValueError, TypeError):
+                record["opportunity_amount"] = None
+
+        # Build dedup group key
+        record["dedup_group_key"] = "|".join([
+            str(record.get("account_name", "")),
+            str(record.get("date_of_record", "")),
+            str(record.get("product_area", "")),
+            str(record.get("product_subcategory", "")),
+            str(record.get("insight_category", "")),
+        ])
+
+        data.append(record)
+
+    wb.close()
+    return data
+
+
 def load_insights(data: list[dict], session) -> int:
     count = 0
     for row in data:
         priority = compute_priority_score(row)
         urgency = compute_urgency_level(row)
+
+        d = row.get("date_of_record")
+        if isinstance(d, str):
+            d = date.fromisoformat(d[:10])
+        elif isinstance(d, datetime):
+            d = d.date()
+
         insight = Insight(
             id=uuid.uuid4(),
             account_name=row.get("account_name") or "Unknown",
             insight_text=row["insight_text"],
-            product_area=row["product_area"],
+            product_area=row.get("product_area", "Unknown"),
             product_subcategory=row.get("product_subcategory", "General"),
-            insight_category=row["insight_category"],
+            insight_category=row.get("insight_category", "Null"),
             input_data_source=row.get("input_data_source"),
             source_tool=row.get("source_tool", "unknown"),
             source_link=row.get("source_link"),
             role_present=row.get("role_present"),
             conversation_type=row.get("conversation_type"),
-            date_of_record=date.fromisoformat(row["date_of_record"]) if isinstance(row["date_of_record"], str) else row["date_of_record"],
+            date_of_record=d,
             comments=row.get("comments"),
             dedup_group_key=row.get("dedup_group_key"),
             unique_insight_status=row.get("unique_insight_status", "Key Record"),
-            # V2 account enrichment
+            # Account enrichment
             icp=row.get("icp"),
             account_priority_group=row.get("account_priority_group"),
             vertical=row.get("vertical"),
@@ -224,15 +240,18 @@ def main():
             session.query(Insight).delete()
             session.commit()
 
-        if INSIGHTS_JSON.exists():
+        if XLSX_FILE.exists():
+            print(f"Loading insights from {XLSX_FILE}")
+            data = load_xlsx(XLSX_FILE)
+        elif INSIGHTS_JSON.exists():
             print(f"Loading insights from {INSIGHTS_JSON}")
             with open(INSIGHTS_JSON) as f:
                 data = json.load(f)
             if isinstance(data, dict) and "insights" in data:
                 data = data["insights"]
         else:
-            print("insights.json not found, generating sample data...")
-            data = generate_sample_insights()
+            print("No data file found. Cannot seed.")
+            return
 
         count = load_insights(data, session)
         print(f"Seeded {count} insights into the database.")

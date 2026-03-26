@@ -7,10 +7,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 COPY backend/pyproject.toml .
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir . openpyxl
 
 COPY backend/app ./app
 COPY scripts/seed_db.py ./seed_db.py
+COPY data/output/Insights_Combined_2026.xlsx ./Insights_Combined_2026.xlsx
 COPY data/output/insights.json ./insights.json
 
 CMD ["python3", "seed_db.py"]

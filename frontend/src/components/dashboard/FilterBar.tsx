@@ -1,12 +1,18 @@
 import { useSearchParams } from "react-router-dom";
 import { PRODUCT_AREAS, INSIGHT_CATEGORIES, SOURCE_OPTIONS, TIME_RANGE_OPTIONS } from "@/lib/constants";
 
-const ICP_OPTIONS = ["AI Enterprise", "AI Native", "Enterprise", "SMB"];
+const ICP_OPTIONS = ["AI Enterprise", "AI Lab", "AI Native", "AI Platform"];
 const VERTICAL_OPTIONS = [
-  "AI/ML", "Autonomous Vehicles", "Cloud & Infrastructure",
-  "Cybersecurity", "Defense & Government", "Energy & Sustainability",
-  "Financial Services", "Healthcare & Life Sciences", "Media & Entertainment",
-  "Robotics", "Social Media & Networking", "Technology & SaaS",
+  "AI Content", "AI/ML Tools", "Audio / Speech", "Automotive / ADAS",
+  "Autonomous Systems", "BioTech/Pharma", "Cloud Compute", "Code Generation",
+  "Compute / Quantum", "Data & AI Platform", "Energy / Oil & Gas",
+  "Financial Enterprise", "Financial Services", "Financial Technology",
+  "Gen AI & LLM Infrastructure", "Government / Defense", "HPC / Research",
+  "Healthcare", "Image Generation", "LLM / Foundation Models", "Legal",
+  "Media & Entertainment", "Model Serving / Inference", "Motorsport / Automotive",
+  "Quantitative Trading", "Research / Academia", "Research Organization/Education",
+  "Retail / Ecommerce", "Robotics", "Simulation / Engineering",
+  "Technology Enterprise", "Telecommunications", "Video Generation", "Video Understanding",
 ];
 
 export function FilterBar() {

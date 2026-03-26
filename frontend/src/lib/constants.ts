@@ -48,19 +48,14 @@ export const URGENCY_COLORS: Record<string, string> = {
 };
 
 export const OPPORTUNITY_STAGE_COLORS: Record<string, string> = {
-  "Closed Won": "#10B981",
-  "Closed Lost": "#EF4444",
-  Negotiation: "#3B82F6",
-  Negotiations: "#3B82F6",
-  Proposal: "#8B5CF6",
-  "Capacity Review": "#F59E0B",
   Discovery: "#EC4899",
-  "Discovery / Prospect": "#EC4899",
+  "Capacity Review": "#F59E0B",
+  "Closed Won": "#10B981",
   "Technical Evaluation": "#6366F1",
-  "Active Discussion / BMaaS": "#F97316",
-  "Active Customer": "#14B8A6",
-  Prospecting: "#6B7280",
-  New: "#94A3B8",
+  "Legal Redlines": "#F97316",
+  Negotiations: "#3B82F6",
+  "Closed Lost": "#EF4444",
+  Other: "#94A3B8",
 };
 
 export const CATEGORY_DEFINITIONS: Record<string, string> = {

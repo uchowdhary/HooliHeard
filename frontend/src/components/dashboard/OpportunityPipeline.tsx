@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BarChart,
@@ -18,10 +19,41 @@ interface Props {
   loading: boolean;
 }
 
+const TOP_STAGES = new Set([
+  "Discovery",
+  "Capacity Review",
+  "Closed Won",
+  "Technical Evaluation",
+  "Legal Redlines",
+  "Negotiations",
+  "Closed Lost",
+]);
+
 export function OpportunityPipeline({ data, loading }: Props) {
   const navigate = useNavigate();
 
+  const chartData = useMemo(() => {
+    if (!data) return [];
+    const top: OpportunityStageCount[] = [];
+    let otherCount = 0;
+    let otherOpp = 0;
+    for (const d of data) {
+      if (TOP_STAGES.has(d.opportunity_stage)) {
+        top.push(d);
+      } else {
+        otherCount += d.count;
+        otherOpp += d.total_opportunity;
+      }
+    }
+    top.sort((a, b) => b.count - a.count);
+    if (otherCount > 0) {
+      top.push({ opportunity_stage: "Other", count: otherCount, total_opportunity: otherOpp });
+    }
+    return top;
+  }, [data]);
+
   const handleClick = (entry: OpportunityStageCount) => {
+    if (entry.opportunity_stage === "Other") return;
     navigate(`/insights?opportunity_stage=${encodeURIComponent(entry.opportunity_stage)}`);
   };
 
@@ -29,23 +61,23 @@ export function OpportunityPipeline({ data, loading }: Props) {
     <Card title="Insights by Opportunity Stage">
       {loading || !data ? (
         <div className="h-64 animate-pulse rounded bg-slate-100" />
-      ) : data.length === 0 ? (
+      ) : chartData.length === 0 ? (
         <div className="flex h-64 items-center justify-center text-sm text-slate-500">
           No opportunity stage data available
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={280}>
+        <ResponsiveContainer width="100%" height={Math.max(200, chartData.length * 36 + 40)}>
           <BarChart
-            data={data}
+            data={chartData}
             layout="vertical"
-            margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
+            margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
           >
             <XAxis type="number" tick={{ fontSize: 12 }} />
             <YAxis
               dataKey="opportunity_stage"
               type="category"
               tick={{ fontSize: 11 }}
-              width={90}
+              width={120}
             />
             <Tooltip
               content={({ payload }) => {
@@ -56,7 +88,9 @@ export function OpportunityPipeline({ data, loading }: Props) {
                     <p className="font-semibold text-slate-900">{d.opportunity_stage}</p>
                     <p className="text-slate-600">{d.count} insights</p>
                     <p className="text-slate-600">Pipeline: {formatCurrency(d.total_opportunity)}</p>
-                    <p className="mt-1 text-blue-500">Click to view insights</p>
+                    {d.opportunity_stage !== "Other" && (
+                      <p className="mt-1 text-blue-500">Click to view insights</p>
+                    )}
                   </div>
                 );
               }}
@@ -66,10 +100,10 @@ export function OpportunityPipeline({ data, loading }: Props) {
               radius={[0, 4, 4, 0]}
               cursor="pointer"
               onClick={(_data, index) => {
-                if (data[index]) handleClick(data[index]);
+                if (chartData[index]) handleClick(chartData[index]);
               }}
             >
-              {data.map((entry, i) => (
+              {chartData.map((entry, i) => (
                 <Cell
                   key={i}
                   fill={OPPORTUNITY_STAGE_COLORS[entry.opportunity_stage] ?? "#94A3B8"}

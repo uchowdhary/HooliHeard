@@ -2,9 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import { StatCard } from "@/components/shared/Card";
 import { ErrorAlert } from "@/components/shared/ErrorAlert";
 import { FilterBar } from "./FilterBar";
-import { InsightsByArea } from "./InsightsByArea";
 import { InsightsByCategory } from "./InsightsByCategory";
-import { TrendChart } from "./TrendChart";
 import { TopAccountsTable } from "./TopAccountsTable";
 import { VerticalChart } from "./VerticalChart";
 import { OpportunityPipeline } from "./OpportunityPipeline";
@@ -13,10 +11,8 @@ import { ThemeHeatmap } from "./ThemeHeatmap";
 import { WordCloud } from "./WordCloud";
 import {
   useSummary,
-  useByArea,
   useByCategory,
   useByAccount,
-  useTrend,
   useByVertical,
   useByOpportunityStage,
   usePriorityMatrix,
@@ -37,17 +33,15 @@ export function DashboardPage() {
   };
 
   const summary = useSummary(filters);
-  const byArea = useByArea(filters);
   const byCategory = useByCategory(filters);
   const byAccount = useByAccount(filters);
-  const trend = useTrend(filters);
   const byVertical = useByVertical(filters);
   const byOppStage = useByOpportunityStage(filters);
   const priorityMatrix = usePriorityMatrix(filters);
   const themeHeatmap = useThemeHeatmap(filters);
   const wordFreqs = useWordFrequencies(filters);
 
-  const allQueries = [summary, byArea, byCategory, byAccount, trend, byVertical, byOppStage, priorityMatrix, themeHeatmap, wordFreqs];
+  const allQueries = [summary, byCategory, byAccount, byVertical, byOppStage, priorityMatrix, themeHeatmap, wordFreqs];
   const hasError = allQueries.some((q) => q.isError);
   const firstError = allQueries.find((q) => q.isError)?.error;
 
@@ -174,27 +168,21 @@ export function DashboardPage() {
         <OpportunityPipeline data={byOppStage.data} loading={byOppStage.isLoading} />
       </div>
 
-      {/* Charts Row */}
+      {/* Category + Vertical */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <InsightsByArea data={byArea.data} loading={byArea.isLoading} />
         <InsightsByCategory
           data={byCategory.data}
           loading={byCategory.isLoading}
         />
+        <VerticalChart data={byVertical.data} loading={byVertical.isLoading} />
       </div>
 
       {/* Theme Heatmap — full width */}
       <ThemeHeatmap data={themeHeatmap.data} loading={themeHeatmap.isLoading} />
 
-      {/* Word Cloud + Trend */}
+      {/* Word Cloud + Top Accounts */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <WordCloud data={wordFreqs.data} loading={wordFreqs.isLoading} />
-        <TrendChart data={trend.data} loading={trend.isLoading} />
-      </div>
-
-      {/* Vertical */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <VerticalChart data={byVertical.data} loading={byVertical.isLoading} />
         <TopAccountsTable data={byAccount.data} loading={byAccount.isLoading} />
       </div>
     </div>

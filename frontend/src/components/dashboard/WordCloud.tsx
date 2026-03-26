@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/shared/Card";
 import { PRODUCT_AREA_COLORS } from "@/lib/constants";
 import type { WordFrequency } from "@/types/dashboard";
@@ -23,6 +24,8 @@ const CLOUD_COLORS = [
 ];
 
 export function WordCloud({ data, loading }: Props) {
+  const navigate = useNavigate();
+
   if (loading) {
     return (
       <Card title="Word Cloud">
@@ -68,7 +71,7 @@ export function WordCloud({ data, loading }: Props) {
         {shuffled.map((item, i) => (
           <span
             key={item.word}
-            className="cursor-default transition-transform hover:scale-110"
+            className="cursor-pointer transition-all hover:scale-110 hover:underline"
             style={{
               fontSize: `${fontSize(item.count)}px`,
               color: CLOUD_COLORS[i % CLOUD_COLORS.length],
@@ -76,7 +79,8 @@ export function WordCloud({ data, loading }: Props) {
               fontWeight: item.count > maxCount * 0.5 ? 700 : 500,
               lineHeight: 1.2,
             }}
-            title={`"${item.word}" — ${item.count} mentions`}
+            title={`"${item.word}" — ${item.count} mentions — click to search`}
+            onClick={() => navigate(`/insights?search=${encodeURIComponent(item.word)}`)}
           >
             {item.word}
           </span>

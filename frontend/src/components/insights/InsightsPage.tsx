@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { InsightFilters } from "./InsightFilters";
 import { InsightTable } from "./InsightTable";
 import { InsightDetail } from "./InsightDetail";
@@ -7,12 +8,39 @@ import { useInsights, useInsight } from "@/hooks/useInsights";
 import type { InsightFilters as IFilters } from "@/types/insight";
 import type { Insight } from "@/types/insight";
 
+const URL_FILTER_KEYS = [
+  "product_area", "insight_category", "account_name", "vertical",
+  "icp", "opportunity_stage", "search",
+] as const;
+
 export function InsightsPage() {
+  const [searchParams] = useSearchParams();
+
+  // Build initial filters from URL search params (set by dashboard chart clicks)
+  const urlFilters: Partial<IFilters> = {};
+  for (const key of URL_FILTER_KEYS) {
+    const val = searchParams.get(key);
+    if (val) urlFilters[key] = val;
+  }
+
   const [filters, setFilters] = useState<IFilters>({
     page: 1,
     page_size: 20,
     sort_by: "priority_score",
+    ...urlFilters,
   });
+
+  // Update filters when URL params change (e.g. clicking from dashboard)
+  useEffect(() => {
+    const newUrlFilters: Partial<IFilters> = {};
+    for (const key of URL_FILTER_KEYS) {
+      const val = searchParams.get(key);
+      if (val) newUrlFilters[key] = val;
+    }
+    if (Object.keys(newUrlFilters).length > 0) {
+      setFilters((f) => ({ ...f, ...newUrlFilters, page: 1 }));
+    }
+  }, [searchParams]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
 

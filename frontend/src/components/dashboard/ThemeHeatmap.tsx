@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/shared/Card";
 import { PRODUCT_AREA_COLORS } from "@/lib/constants";
 import type { ThemeHeatmapCell } from "@/types/dashboard";
@@ -18,6 +19,8 @@ function intensityColor(count: number, max: number): string {
 }
 
 export function ThemeHeatmap({ data, loading }: Props) {
+  const navigate = useNavigate();
+
   if (loading) {
     return (
       <Card title="Theme Heatmap by Product Area">
@@ -105,8 +108,13 @@ export function ThemeHeatmap({ data, loading }: Props) {
                   return (
                     <td
                       key={cat}
-                      className={`px-1.5 py-1 text-center font-semibold rounded-sm ${intensityColor(count, maxCount)}`}
-                      title={count > 0 ? `${count} insights from ${accounts} account${accounts !== 1 ? "s" : ""}` : "—"}
+                      className={`px-1.5 py-1 text-center font-semibold rounded-sm ${intensityColor(count, maxCount)} ${count > 0 ? "cursor-pointer hover:ring-2 hover:ring-blue-400" : ""}`}
+                      title={count > 0 ? `${count} insights from ${accounts} account${accounts !== 1 ? "s" : ""} — click to view` : "—"}
+                      onClick={() => {
+                        if (count > 0) {
+                          navigate(`/insights?product_area=${encodeURIComponent(area)}&insight_category=${encodeURIComponent(cat)}`);
+                        }
+                      }}
                     >
                       {count > 0 ? count : ""}
                     </td>

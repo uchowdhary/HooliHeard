@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   PieChart,
   Pie,
@@ -21,6 +22,14 @@ const COLORS = [
 ];
 
 export function VerticalChart({ data, loading }: Props) {
+  const navigate = useNavigate();
+
+  const handleClick = (_data: unknown, index: number) => {
+    if (data?.[index]) {
+      navigate(`/insights?vertical=${encodeURIComponent(data[index].vertical)}`);
+    }
+  };
+
   return (
     <Card title="Insights by Industry Vertical">
       {loading || !data ? (
@@ -41,6 +50,8 @@ export function VerticalChart({ data, loading }: Props) {
               outerRadius={80}
               innerRadius={40}
               paddingAngle={2}
+              cursor="pointer"
+              onClick={handleClick}
             >
               {data.map((_, i) => (
                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
@@ -55,6 +66,7 @@ export function VerticalChart({ data, loading }: Props) {
                     <p className="font-semibold text-slate-900">{d.vertical}</p>
                     <p className="text-slate-600">{d.count} insights</p>
                     <p className="text-slate-600">Pipeline: {formatCurrency(d.total_opportunity)}</p>
+                    <p className="mt-1 text-blue-500">Click to view insights</p>
                   </div>
                 );
               }}

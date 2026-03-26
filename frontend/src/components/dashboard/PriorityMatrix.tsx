@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   ScatterChart,
   Scatter,
@@ -19,6 +20,8 @@ interface Props {
 }
 
 export function PriorityMatrix({ data, loading }: Props) {
+  const navigate = useNavigate();
+
   return (
     <Card title="Priority vs Volume by Product Area">
       {loading || !data ? (
@@ -60,6 +63,7 @@ export function PriorityMatrix({ data, loading }: Props) {
                     <p className="text-slate-600">{d.count} insights from {d.account_count} accounts</p>
                     <p className="text-slate-600">Avg priority: {d.avg_priority}</p>
                     <p className="text-slate-600">Pipeline: {formatCurrency(d.total_arr)}</p>
+                    <p className="mt-1 text-blue-500">Click to view insights</p>
                   </div>
                 );
               }}
@@ -72,6 +76,10 @@ export function PriorityMatrix({ data, loading }: Props) {
                 data={[entry]}
                 fill={PRODUCT_AREA_COLORS[entry.product_area] ?? "#94A3B8"}
                 fillOpacity={0.85}
+                cursor="pointer"
+                onClick={() => {
+                  navigate(`/insights?product_area=${encodeURIComponent(entry.product_area)}`);
+                }}
               />
             ))}
           </ScatterChart>

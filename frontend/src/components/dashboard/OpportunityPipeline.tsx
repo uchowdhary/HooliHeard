@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -18,6 +19,12 @@ interface Props {
 }
 
 export function OpportunityPipeline({ data, loading }: Props) {
+  const navigate = useNavigate();
+
+  const handleClick = (entry: OpportunityStageCount) => {
+    navigate(`/insights?opportunity_stage=${encodeURIComponent(entry.opportunity_stage)}`);
+  };
+
   return (
     <Card title="Insights by Opportunity Stage">
       {loading || !data ? (
@@ -49,15 +56,25 @@ export function OpportunityPipeline({ data, loading }: Props) {
                     <p className="font-semibold text-slate-900">{d.opportunity_stage}</p>
                     <p className="text-slate-600">{d.count} insights</p>
                     <p className="text-slate-600">Pipeline: {formatCurrency(d.total_opportunity)}</p>
+                    <p className="mt-1 text-blue-500">Click to view insights</p>
                   </div>
                 );
               }}
             />
-            <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+            <Bar
+              dataKey="count"
+              radius={[0, 4, 4, 0]}
+              cursor="pointer"
+              onClick={(_data, index) => {
+                if (data[index]) handleClick(data[index]);
+              }}
+            >
               {data.map((entry, i) => (
                 <Cell
                   key={i}
                   fill={OPPORTUNITY_STAGE_COLORS[entry.opportunity_stage] ?? "#94A3B8"}
+                  stroke={entry.opportunity_stage === "Closed Lost" ? "#991B1B" : undefined}
+                  strokeWidth={entry.opportunity_stage === "Closed Lost" ? 2 : 0}
                 />
               ))}
             </Bar>

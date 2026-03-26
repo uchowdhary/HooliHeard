@@ -85,7 +85,7 @@ export function InsightFilters({ filters, onChange }: Props) {
       >
         <option value="">All Sources</option>
         {SOURCE_OPTIONS.map((s) => (
-          <option key={s} value={s}>{s}</option>
+          <option key={s.value} value={s.value}>{s.label}</option>
         ))}
       </select>
 

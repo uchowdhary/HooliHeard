@@ -1,5 +1,7 @@
 export const SOURCE_OPTIONS = [
-  "Gong", "Jira", "Salesforce",
+  { label: "Gong", value: "Gong" },
+  { label: "CRs - JIRA", value: "Jira" },
+  { label: "Salesforce", value: "Salesforce" },
 ];
 
 export const TIME_RANGE_OPTIONS = [

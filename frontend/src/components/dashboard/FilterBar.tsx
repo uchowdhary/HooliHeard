@@ -106,8 +106,8 @@ export function FilterBar() {
       >
         <option value="">All Sources</option>
         {SOURCE_OPTIONS.map((s) => (
-          <option key={s} value={s}>
-            {s}
+          <option key={s.value} value={s.value}>
+            {s.label}
           </option>
         ))}
       </select>

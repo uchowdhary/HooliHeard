@@ -17,19 +17,20 @@ from app.db import engine, SessionLocal, create_all  # noqa: E402
 from app.models.insight import Insight  # noqa: E402
 
 # --- File discovery ---
-# Try xlsx first (v3), then JSON (v2), then fallback paths
+# Primary: two enriched xlsx files (Last30Days + 2MonthsPrior)
+XLSX_LAST30 = ROOT / "data" / "output" / "Customer_Insights_Last30Days.xlsx"
+XLSX_2MONTHS = ROOT / "data" / "output" / "Customer_Insights_2MonthsPrior.xlsx"
+# Fallback paths for Docker / k8s
+if not XLSX_LAST30.exists():
+    XLSX_LAST30 = Path("Customer_Insights_Last30Days.xlsx")
+if not XLSX_2MONTHS.exists():
+    XLSX_2MONTHS = Path("Customer_Insights_2MonthsPrior.xlsx")
+
+# Legacy fallbacks
 XLSX_FILE = ROOT / "data" / "output" / "Insights_Combined_2026.xlsx"
 INSIGHTS_JSON = ROOT / "data" / "output" / "insights.json"
 if not INSIGHTS_JSON.exists():
-    INSIGHTS_JSON = Path("/data/output/insights.json")
-if not INSIGHTS_JSON.exists():
     INSIGHTS_JSON = Path("insights.json")
-
-# Also check for xlsx in alternate locations
-if not XLSX_FILE.exists():
-    XLSX_FILE = Path("/data/output/Insights_Combined_2026.xlsx")
-if not XLSX_FILE.exists():
-    XLSX_FILE = Path("Insights_Combined_2026.xlsx")
 
 # --- Priority scoring ---
 
@@ -106,19 +107,34 @@ def compute_urgency_level(row):
 
 
 def load_xlsx(path: Path) -> list[dict]:
-    """Load insights from an xlsx file."""
+    """Load insights from an xlsx file.
+
+    Handles two formats:
+      - Title row on row 1, headers on row 2 (new enriched files)
+      - Headers on row 1 (legacy Insights_Combined_2026.xlsx)
+    """
     import openpyxl
 
     wb = openpyxl.load_workbook(str(path), read_only=True)
     ws = wb.active
 
     rows = list(ws.iter_rows(values_only=True))
-    headers = rows[0]
+
+    # Detect if row 0 is a title row (first cell is long/descriptive, second cell is None)
+    if rows[0][1] is None and len(str(rows[0][0] or "")) > 30:
+        # Title row present — headers are on row 1 (index 1)
+        headers = rows[1]
+        data_rows = rows[2:]
+    else:
+        headers = rows[0]
+        data_rows = rows[1:]
+
     data = []
 
     # Column name mapping (xlsx header → internal key)
     COL_MAP = {
         "Account Name": "account_name",
+        "Account Name (SFDC)": "account_name",
         "ICP": "icp",
         "Vertical": "vertical",
         "Stage": "opportunity_stage",
@@ -135,11 +151,21 @@ def load_xlsx(path: Path) -> list[dict]:
         "Date of Record": "date_of_record",
         "Period": "period",
         "Conversation Type": "conversation_type",
+        "Role Present on Call": "role_present",
         "Comments": "comments",
         "Unique Insight Status": "unique_insight_status",
+        "Account Priority Group": "account_priority_group",
+        "Workloads": "workloads",
+        "GPU Types / Quantities": "gpu_types",
+        "Opportunity Stage": "opportunity_stage",
+        "Opportunity Amount ($)": "opportunity_amount",
+        "Competitors Mentioned": "competitors_mentioned",
+        "Total Revenue": "total_revenue",
+        "Most Recent Month w/ Revenue": "most_recent_revenue_month",
+        "Closed Won Opp Count": "closed_won_opp_count",
     }
 
-    for row in rows[1:]:
+    for row in data_rows:
         record = {}
         for i, header in enumerate(headers):
             key = COL_MAP.get(header, header)
@@ -159,13 +185,22 @@ def load_xlsx(path: Path) -> list[dict]:
         elif d is None:
             record["date_of_record"] = date.today()
 
-        # Normalize opportunity_amount to float
-        opp = record.get("opportunity_amount")
-        if opp is not None:
+        # Normalize numeric fields to float
+        for num_field in ["opportunity_amount", "total_revenue"]:
+            val = record.get(num_field)
+            if val is not None:
+                try:
+                    record[num_field] = float(val)
+                except (ValueError, TypeError):
+                    record[num_field] = None
+
+        # Normalize closed_won_opp_count to int
+        cwoc = record.get("closed_won_opp_count")
+        if cwoc is not None:
             try:
-                record["opportunity_amount"] = float(opp)
+                record["closed_won_opp_count"] = int(cwoc)
             except (ValueError, TypeError):
-                record["opportunity_amount"] = None
+                record["closed_won_opp_count"] = None
 
         # Build dedup group key
         record["dedup_group_key"] = "|".join([
@@ -245,7 +280,14 @@ def main():
             session.query(Insight).delete()
             session.commit()
 
-        if INSIGHTS_JSON.exists():
+        # Prefer enriched xlsx files, then JSON fallback
+        if XLSX_LAST30.exists() or XLSX_2MONTHS.exists():
+            data = []
+            for xlsx_path in [XLSX_LAST30, XLSX_2MONTHS]:
+                if xlsx_path.exists():
+                    print(f"Loading insights from {xlsx_path}")
+                    data.extend(load_xlsx(xlsx_path))
+        elif INSIGHTS_JSON.exists():
             print(f"Loading insights from {INSIGHTS_JSON}")
             with open(INSIGHTS_JSON) as f:
                 data = json.load(f)

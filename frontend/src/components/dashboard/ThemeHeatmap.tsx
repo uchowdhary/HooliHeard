@@ -78,6 +78,7 @@ export function ThemeHeatmap({ data, loading }: Props) {
       .replace("Education Gaps", "Edu Gaps")
       .replace("GTM / Partnership", "GTM")
       .replace("Pricing / Terms", "Pricing")
+      .replace("Product Fit / Scope", "Fit / Scope")
       .replace("CX Requirement", "CX Req");
 
   return (

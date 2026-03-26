@@ -58,6 +58,7 @@ CATEGORY_URGENCY = {
     "Pricing / Terms": 4,
     "Education Gaps": 3,
     "GTM / Partnership": 3,
+    "Product Fit / Scope": 6,
     "Success Pattern / Win Signal": 2,
     "Null": 1,
 }
@@ -244,15 +245,15 @@ def main():
             session.query(Insight).delete()
             session.commit()
 
-        if XLSX_FILE.exists():
-            print(f"Loading insights from {XLSX_FILE}")
-            data = load_xlsx(XLSX_FILE)
-        elif INSIGHTS_JSON.exists():
+        if INSIGHTS_JSON.exists():
             print(f"Loading insights from {INSIGHTS_JSON}")
             with open(INSIGHTS_JSON) as f:
                 data = json.load(f)
             if isinstance(data, dict) and "insights" in data:
                 data = data["insights"]
+        elif XLSX_FILE.exists():
+            print(f"Loading insights from {XLSX_FILE}")
+            data = load_xlsx(XLSX_FILE)
         else:
             print("No data file found. Cannot seed.")
             return

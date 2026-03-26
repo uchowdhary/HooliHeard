@@ -1,7 +1,7 @@
 export const SOURCE_OPTIONS = [
   { label: "Gong", value: "Gong" },
   { label: "CRs - JIRA", value: "Jira" },
-  { label: "Salesforce", value: "Salesforce" },
+  { label: "SFDC", value: "SFDC" },
 ];
 
 export const TIME_RANGE_OPTIONS = [
@@ -15,30 +15,17 @@ export const PRODUCT_AREAS = [
   { label: "Infra", value: "Infra", color: "#3B82F6" },
   { label: "CKS", value: "CKS", color: "#10B981" },
   { label: "Platform", value: "Platform", color: "#F59E0B" },
-  { label: "Platform/CKS", value: "Platform/CKS", color: "#84CC16" },
   { label: "AI Services", value: "AI Services", color: "#8B5CF6" },
-  { label: "Compute/GPU", value: "Compute/GPU", color: "#EC4899" },
-  { label: "Networking", value: "Networking", color: "#06B6D4" },
-  { label: "Storage", value: "Storage", color: "#F97316" },
-  { label: "Observability", value: "Observability", color: "#14B8A6" },
-  { label: "IAM/Access", value: "IAM/Access", color: "#6366F1" },
 ] as const;
 
 export const PRODUCT_AREA_COLORS: Record<string, string> = {
   Infra: "#3B82F6",
   CKS: "#10B981",
   Platform: "#F59E0B",
-  "Platform/CKS": "#84CC16",
   "AI Services": "#8B5CF6",
-  "Compute/GPU": "#EC4899",
-  Networking: "#06B6D4",
-  Storage: "#F97316",
-  Observability: "#14B8A6",
-  "IAM/Access": "#6366F1",
 };
 
 export const INSIGHT_CATEGORIES = [
-  "CX Requirement",
   "Capacity",
   "Capacity Issues",
   "Customer Requirements (Enhancement)",
@@ -47,14 +34,10 @@ export const INSIGHT_CATEGORIES = [
   "Competition / Alternatives",
   "Pricing / Terms",
   "Process / Operational Friction",
+  "Product Fit / Scope",
   "Education Gaps",
   "GTM / Partnership",
   "Success Pattern / Win Signal",
-  "Loss Signal (Capacity)",
-  "Loss Signal (Commercial)",
-  "Loss Signal (Product Model Mismatch)",
-  "Loss Signal (No Response / Stale)",
-  "Loss Signal (Unknown)",
   "Null",
 ] as const;
 
@@ -81,7 +64,6 @@ export const OPPORTUNITY_STAGE_COLORS: Record<string, string> = {
 };
 
 export const CATEGORY_DEFINITIONS: Record<string, string> = {
-  "CX Requirement": "Customer experience requirements from support and success teams",
   "Capacity": "Customer needs for compute, GPU, or storage capacity",
   "Capacity Issues": "Existing capacity problems — outages, delays, shortages",
   "Pricing / Terms": "Pricing concerns, contract terms, commercial negotiations",
@@ -94,26 +76,19 @@ export const CATEGORY_DEFINITIONS: Record<string, string> = {
   "GTM / Partnership": "Go-to-market collaboration or partnership opportunities",
   "Success Pattern / Win Signal": "Positive signals — wins, expansions, advocacy",
   "Process / Operational Friction": "Internal process issues affecting customer experience",
-  "Loss Signal (Capacity)": "Lost deal due to capacity constraints or availability",
-  "Loss Signal (Commercial)": "Lost deal due to pricing, terms, or commercial fit",
-  "Loss Signal (Product Model Mismatch)": "Lost deal due to product not matching use case",
-  "Loss Signal (No Response / Stale)": "Lost deal — customer went silent or stale pipeline",
-  "Loss Signal (Unknown)": "Lost deal — reason not documented",
+  "Product Fit / Scope": "Product-market fit issues or scope mismatches",
 };
 
-export const ICP_OPTIONS = ["AI Enterprise", "AI Lab", "AI Native", "AI Platform"];
+export const ICP_OPTIONS = ["AI Enterprise", "AI Native", "AI Native (SMB)"];
 
 export const VERTICAL_OPTIONS = [
-  "AI Content", "AI/ML Tools", "Audio / Speech", "Automotive / ADAS",
-  "Autonomous Systems", "BioTech/Pharma", "Cloud Compute", "Code Generation",
-  "Compute / Quantum", "Data & AI Platform", "Energy / Oil & Gas",
-  "Financial Enterprise", "Financial Services", "Financial Technology",
-  "Gen AI & LLM Infrastructure", "Government / Defense", "HPC / Research",
-  "Healthcare", "Image Generation", "LLM / Foundation Models", "Legal",
-  "Media & Entertainment", "Model Serving / Inference", "Motorsport / Automotive",
-  "Quantitative Trading", "Research / Academia", "Research Organization/Education",
-  "Retail / Ecommerce", "Robotics", "Simulation / Engineering",
-  "Technology Enterprise", "Telecommunications", "Video Generation", "Video Understanding",
+  "AI / LLMs", "AI / Research", "AI / Search", "AI Research",
+  "AI Research / Generative AI", "Autonomous Vehicles", "Biotech / Drug Discovery",
+  "Cybersecurity", "Cybersecurity / Federal", "Financial Services",
+  "Financial Services / Quantitative Trading", "Generative AI",
+  "Generative AI / Image Generation", "Generative AI / Video", "Multiple",
+  "Pharma / Life Sciences", "Robotics", "Robotics / Automotive",
+  "Robotics / Humanoid AI", "SaaS / NLP / Writing AI",
 ];
 
 export const SOURCE_TOOLS: Record<
@@ -121,6 +96,6 @@ export const SOURCE_TOOLS: Record<
   { icon: string; color: string; label: string }
 > = {
   Gong: { icon: "G", color: "#7C3AED", label: "Gong" },
-  Salesforce: { icon: "S", color: "#00A1E0", label: "Salesforce" },
+  SFDC: { icon: "S", color: "#00A1E0", label: "SFDC" },
   Jira: { icon: "J", color: "#0052CC", label: "Jira" },
 };

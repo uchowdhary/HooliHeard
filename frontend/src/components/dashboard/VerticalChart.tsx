@@ -57,16 +57,16 @@ export function VerticalChart({ data, loading }: Props) {
           No vertical data available
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={320}>
-          <PieChart>
+        <ResponsiveContainer width="100%" height={360}>
+          <PieChart margin={{ left: 0, right: 0 }}>
             <Pie
               data={chartData}
               dataKey="count"
               nameKey="vertical"
-              cx="35%"
+              cx="30%"
               cy="50%"
-              outerRadius={100}
-              innerRadius={50}
+              outerRadius={90}
+              innerRadius={45}
               paddingAngle={2}
               cursor="pointer"
               onClick={handleClick}

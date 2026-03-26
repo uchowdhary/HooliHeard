@@ -60,11 +60,11 @@ export function InsightsByCategory({ data, loading }: Props) {
       {loading || !data ? (
         <div className="h-64 animate-pulse rounded-lg bg-slate-100" />
       ) : (
-        <ResponsiveContainer width="100%" height={280}>
+        <ResponsiveContainer width="100%" height={Math.max(280, sorted.length * 28 + 40)}>
           <BarChart
             data={sorted}
             layout="vertical"
-            margin={{ top: 8, right: 24, bottom: 8, left: 8 }}
+            margin={{ top: 16, right: 24, bottom: 8, left: 8 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
             <XAxis
@@ -76,8 +76,8 @@ export function InsightsByCategory({ data, loading }: Props) {
             <YAxis
               type="category"
               dataKey="insight_category"
-              width={130}
-              tick={{ fontSize: 11, fill: "#64748b" }}
+              width={160}
+              tick={{ fontSize: 10, fill: "#64748b" }}
               axisLine={false}
               tickLine={false}
             />

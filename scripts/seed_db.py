@@ -254,10 +254,10 @@ def load_vof_xlsx(path: Path) -> list[dict]:
                     record["product_area"], "General"
                 )
 
-            # Normalize opportunity stage (strip trailing period)
+            # Normalize opportunity stage (strip trailing period, truncate to 100 chars)
             stage = record.get("opportunity_stage")
             if stage:
-                record["opportunity_stage"] = str(stage).strip().rstrip(".")
+                record["opportunity_stage"] = str(stage).strip().rstrip(".")[:100]
 
             # Normalize opportunity amount
             opp = record.get("opportunity_amount")

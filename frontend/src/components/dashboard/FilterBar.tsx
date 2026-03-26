@@ -1,19 +1,5 @@
 import { useSearchParams } from "react-router-dom";
-import { PRODUCT_AREAS, INSIGHT_CATEGORIES, SOURCE_OPTIONS, TIME_RANGE_OPTIONS } from "@/lib/constants";
-
-const ICP_OPTIONS = ["AI Enterprise", "AI Lab", "AI Native", "AI Platform"];
-const VERTICAL_OPTIONS = [
-  "AI Content", "AI/ML Tools", "Audio / Speech", "Automotive / ADAS",
-  "Autonomous Systems", "BioTech/Pharma", "Cloud Compute", "Code Generation",
-  "Compute / Quantum", "Data & AI Platform", "Energy / Oil & Gas",
-  "Financial Enterprise", "Financial Services", "Financial Technology",
-  "Gen AI & LLM Infrastructure", "Government / Defense", "HPC / Research",
-  "Healthcare", "Image Generation", "LLM / Foundation Models", "Legal",
-  "Media & Entertainment", "Model Serving / Inference", "Motorsport / Automotive",
-  "Quantitative Trading", "Research / Academia", "Research Organization/Education",
-  "Retail / Ecommerce", "Robotics", "Simulation / Engineering",
-  "Technology Enterprise", "Telecommunications", "Video Generation", "Video Understanding",
-];
+import { PRODUCT_AREAS, INSIGHT_CATEGORIES, SOURCE_OPTIONS, TIME_RANGE_OPTIONS, ICP_OPTIONS, VERTICAL_OPTIONS } from "@/lib/constants";
 
 export function FilterBar() {
   const [searchParams, setSearchParams] = useSearchParams();

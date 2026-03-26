@@ -66,10 +66,19 @@ export function ThemeHeatmap({ data, loading }: Props) {
   const shortCat = (cat: string) =>
     cat
       .replace("Customer Requirements ", "CR ")
-      .replace("Process / Operational ", "")
+      .replace("Process / Operational Friction", "Friction")
       .replace("Competition / Alternatives", "Competition")
       .replace("Success Pattern / Win Signal", "Win Signal")
-      .replace("Product Fit / Scope", "Fit/Scope");
+      .replace("Loss Signal (Product Model Mismatch)", "Loss (Mismatch)")
+      .replace("Loss Signal (No Response / Stale)", "Loss (Stale)")
+      .replace("Loss Signal (Commercial)", "Loss (Commercial)")
+      .replace("Loss Signal (Capacity)", "Loss (Capacity)")
+      .replace("Loss Signal (Unknown)", "Loss (Unknown)")
+      .replace("Capacity Issues", "Capacity Iss.")
+      .replace("Education Gaps", "Edu Gaps")
+      .replace("GTM / Partnership", "GTM")
+      .replace("Pricing / Terms", "Pricing")
+      .replace("CX Requirement", "CX Req");
 
   return (
     <Card title="Theme Heatmap by Product Area" subtitle="Cell = insight count, hover for account count">

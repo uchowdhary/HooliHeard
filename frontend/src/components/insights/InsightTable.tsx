@@ -183,9 +183,9 @@ export function InsightTable({ data, loading, onSelect }: Props) {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((row, i) => (
+            {sorted.map((row) => (
               <tr
-                key={i}
+                key={row.id}
                 className="border-b border-slate-50 cursor-pointer transition-colors hover:bg-slate-50"
                 onClick={() => onSelect(row)}
               >

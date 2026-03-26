@@ -36,30 +36,6 @@ def _filters_dict(**kwargs):
     return {k: v for k, v in kwargs.items()}
 
 
-def _common_filters(
-    product_area: Optional[str] = Query(None),
-    insight_category: Optional[str] = Query(None),
-    account_name: Optional[str] = Query(None),
-    date_from: Optional[str] = Query(None),
-    date_to: Optional[str] = Query(None),
-    icp: Optional[str] = Query(None),
-    vertical: Optional[str] = Query(None),
-    opportunity_stage: Optional[str] = Query(None),
-    source_tool: Optional[str] = Query(None),
-):
-    return {
-        "product_area": product_area,
-        "insight_category": insight_category,
-        "account_name": account_name,
-        "date_from": date_from,
-        "date_to": date_to,
-        "icp": icp,
-        "vertical": vertical,
-        "opportunity_stage": opportunity_stage,
-        "source_tool": source_tool,
-    }
-
-
 @router.get("/summary", response_model=DashboardSummary)
 def dashboard_summary(
     product_area: Optional[str] = Query(None),

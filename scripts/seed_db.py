@@ -78,7 +78,11 @@ def compute_priority_score(row):
 
     revenue = row.get("total_revenue") or 0
     won_count = row.get("closed_won_opp_count") or 0
-    engagement_score = min(10, 1 + (math.log10(max(revenue, 1)) - 2 if revenue > 100 else 0) + won_count * 0.5)
+    if revenue == 0 and won_count == 0:
+        # v3 data has no revenue/won-count columns; use baseline so priority isn't artificially low
+        engagement_score = 3
+    else:
+        engagement_score = min(10, 1 + (math.log10(max(revenue, 1)) - 2 if revenue > 100 else 0) + won_count * 0.5)
 
     cat = row.get("insight_category") or ""
     cat_score = CATEGORY_URGENCY.get(cat, 3)

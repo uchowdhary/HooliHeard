@@ -60,10 +60,13 @@ def export_insights_csv(
     date_from: Optional[str] = Query(None),
     date_to: Optional[str] = Query(None),
     unique_insight_status: Optional[str] = Query(None),
+    icp: Optional[str] = Query(None),
+    source_tool: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     q = db.query(Insight)
-    q = _apply_filters(q, product_area, insight_category, account_name, date_from, date_to, unique_insight_status)
+    q = _apply_filters(q, product_area, insight_category, account_name, date_from, date_to,
+                        unique_insight_status, icp=icp, source_tool=source_tool)
     rows = q.order_by(Insight.date_of_record.desc()).all()
 
     output = io.StringIO()

@@ -1,4 +1,4 @@
-import { PRODUCT_AREAS, INSIGHT_CATEGORIES, SOURCE_OPTIONS, TIME_RANGE_OPTIONS } from "@/lib/constants";
+import { PRODUCT_AREAS, INSIGHT_CATEGORIES, SOURCE_OPTIONS, TIME_RANGE_OPTIONS, ICP_OPTIONS, VERTICAL_OPTIONS } from "@/lib/constants";
 import type { InsightFilters as IFilters } from "@/types/insight";
 
 interface Props {
@@ -6,12 +6,10 @@ interface Props {
   onChange: (filters: IFilters) => void;
 }
 
-const ICP_OPTIONS = ["AI Enterprise", "AI Lab", "AI Native", "AI Platform"];
 const SORT_OPTIONS = [
   { label: "Date (newest)", value: "date_of_record" },
   { label: "Priority (highest)", value: "priority_score" },
   { label: "Opportunity $ (highest)", value: "opportunity_amount" },
-  { label: "Revenue (highest)", value: "total_revenue" },
   { label: "Account name", value: "account_name" },
 ];
 
@@ -26,7 +24,7 @@ export function InsightFilters({ filters, onChange }: Props) {
   };
 
   const hasFilters = filters.product_area || filters.insight_category || filters.icp
-    || filters.source_tool || filters.time_range || filters.account_name
+    || filters.vertical || filters.source_tool || filters.time_range || filters.account_name
     || filters.unique_insight_status === "Key Record";
 
   const selectClass =
@@ -66,6 +64,17 @@ export function InsightFilters({ filters, onChange }: Props) {
         <option value="">All ICP Tiers</option>
         {ICP_OPTIONS.map((t) => (
           <option key={t} value={t}>{t}</option>
+        ))}
+      </select>
+
+      <select
+        value={filters.vertical ?? ""}
+        onChange={(e) => update("vertical", e.target.value)}
+        className={selectClass}
+      >
+        <option value="">All Verticals</option>
+        {VERTICAL_OPTIONS.map((v) => (
+          <option key={v} value={v}>{v}</option>
         ))}
       </select>
 

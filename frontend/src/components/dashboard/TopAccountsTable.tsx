@@ -1,4 +1,5 @@
 import { Card } from "@/components/shared/Card";
+import { PRODUCT_AREA_COLORS } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import type { AccountCount } from "@/types/dashboard";
 
@@ -6,14 +7,6 @@ interface Props {
   data: AccountCount[] | undefined;
   loading: boolean;
 }
-
-const AREA_DOT_COLORS: Record<string, string> = {
-  Infra: "bg-blue-500",
-  CKS: "bg-emerald-500",
-  Platform: "bg-amber-500",
-  "AI Services": "bg-violet-500",
-  "W&B": "bg-pink-500",
-};
 
 export function TopAccountsTable({ data, loading }: Props) {
   const top10 = data?.slice(0, 10) ?? [];
@@ -82,7 +75,8 @@ export function TopAccountsTable({ data, loading }: Props) {
                     <td className="py-3 pl-4">
                       <span className="inline-flex items-center gap-2 text-slate-600">
                         <span
-                          className={`inline-block h-2 w-2 rounded-full ${AREA_DOT_COLORS[area] ?? "bg-slate-400"}`}
+                          className="inline-block h-2 w-2 rounded-full"
+                          style={{ backgroundColor: PRODUCT_AREA_COLORS[area] ?? "#6B7280" }}
                         />
                         {area}
                       </span>

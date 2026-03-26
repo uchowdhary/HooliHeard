@@ -99,6 +99,21 @@ export const CATEGORY_DEFINITIONS: Record<string, string> = {
   "Loss Signal (Unknown)": "Lost deal — reason not documented",
 };
 
+export const ICP_OPTIONS = ["AI Enterprise", "AI Lab", "AI Native", "AI Platform"];
+
+export const VERTICAL_OPTIONS = [
+  "AI Content", "AI/ML Tools", "Audio / Speech", "Automotive / ADAS",
+  "Autonomous Systems", "BioTech/Pharma", "Cloud Compute", "Code Generation",
+  "Compute / Quantum", "Data & AI Platform", "Energy / Oil & Gas",
+  "Financial Enterprise", "Financial Services", "Financial Technology",
+  "Gen AI & LLM Infrastructure", "Government / Defense", "HPC / Research",
+  "Healthcare", "Image Generation", "LLM / Foundation Models", "Legal",
+  "Media & Entertainment", "Model Serving / Inference", "Motorsport / Automotive",
+  "Quantitative Trading", "Research / Academia", "Research Organization/Education",
+  "Retail / Ecommerce", "Robotics", "Simulation / Engineering",
+  "Technology Enterprise", "Telecommunications", "Video Generation", "Video Understanding",
+];
+
 export const SOURCE_TOOLS: Record<
   string,
   { icon: string; color: string; label: string }
@@ -106,6 +121,4 @@ export const SOURCE_TOOLS: Record<
   Gong: { icon: "G", color: "#7C3AED", label: "Gong" },
   Salesforce: { icon: "S", color: "#00A1E0", label: "Salesforce" },
   Jira: { icon: "J", color: "#0052CC", label: "Jira" },
-  Slack: { icon: "#", color: "#E01E5A", label: "Slack" },
-  Qualtrics: { icon: "Q", color: "#1BAD4F", label: "Qualtrics" },
 };

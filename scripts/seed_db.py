@@ -117,6 +117,23 @@ VOF_CATEGORY_MAP = {
     "pricing & capacity": "Pricing / Terms",
     "pricing / terms": "Pricing / Terms",
     "pricing/terms": "Pricing / Terms",
+    # Additional mappings for categories that might appear in VoF
+    "competition": "Competition / Alternatives",
+    "competition / alternatives": "Competition / Alternatives",
+    "cx requirement": "CX Requirement",
+    "cx requirements": "CX Requirement",
+    "loss signal": "Loss Signal (Unknown)",
+    "loss signal (capacity)": "Loss Signal (Capacity)",
+    "loss signal (commercial)": "Loss Signal (Commercial)",
+    "loss signal (product model mismatch)": "Loss Signal (Product Model Mismatch)",
+    "loss signal (no response / stale)": "Loss Signal (No Response / Stale)",
+    "loss signal (unknown)": "Loss Signal (Unknown)",
+    "process / operational friction": "Process / Operational Friction",
+    "process friction": "Process / Operational Friction",
+    "product fit / scope": "Product Fit / Scope",
+    "product fit": "Product Fit / Scope",
+    "success pattern / win signal": "Success Pattern / Win Signal",
+    "win signal": "Success Pattern / Win Signal",
 }
 
 # Maps VoF product areas to canonical 4
@@ -199,32 +216,44 @@ def _normalize_stage(raw: str) -> str:
     for substring, canonical in _STAGE_NORMALIZE:
         if substring in low:
             return canonical
-    if "current customer" in low or "active customer" in low:
+    if "current customer" in low:
         return "Closed Won"
+    if "active customer" in low or "active discussion" in low or "bmaas" in low:
+        return "Other"
     if "no open" in low or "no active" in low or "not found" in low or "former" in low:
         return "Other"
     return "Other"
 
 
 def _parse_vof_sheet_date(sheet_name: str) -> date:
-    """Parse a VoF sheet name like '3926' → 2026-03-09, '111725' → 2025-11-17."""
+    """Parse a VoF sheet name like '3926' → 2026-03-09, '111725' → 2025-11-17.
+
+    Format is MDDYY or MMDDYY with no separators. We try two-digit month
+    first (if it produces a valid date), then fall back to one-digit month.
+    """
     name = sheet_name.strip()
-    # Try to parse as MMDDYY or MDDYY
+    # Try MMDDYY (6-char) first
     if len(name) == 6:
-        # MMDDYY
         m, d, y = int(name[:2]), int(name[2:4]), 2000 + int(name[4:6])
-    elif len(name) == 5:
-        # MDDYY
+        try:
+            return date(y, m, d)
+        except ValueError:
+            pass
+    # Try MDDYY (5-char) — or 6-char fallback with M=1 digit
+    if len(name) == 5:
         m, d, y = int(name[:1]), int(name[1:3]), 2000 + int(name[3:5])
-    elif len(name) == 4:
-        # MDYY — e.g., 3926 → M=3, D=9, YY=26
+        try:
+            return date(y, m, d)
+        except ValueError:
+            pass
+    # Try MDYY (4-char)
+    if len(name) == 4:
         m, d, y = int(name[0]), int(name[1]), 2000 + int(name[2:4])
-    else:
-        return date.today()
-    try:
-        return date(y, m, d)
-    except ValueError:
-        return date.today()
+        try:
+            return date(y, m, d)
+        except ValueError:
+            pass
+    return date.today()
 
 
 def load_vof_xlsx(path: Path) -> list[dict]:

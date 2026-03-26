@@ -120,7 +120,7 @@ export function TopInsights({ filters, onSelect }: Props) {
               {/* Account + source */}
               <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-2">
                 <span className="text-[11px] font-medium text-slate-700">
-                  {truncate(insight.account_name, 25)}
+                  {truncate(insight.account_name || "Unknown", 25)}
                 </span>
                 <span className="text-[10px] text-slate-400">
                   {insight.source_tool} · {insight.date_of_record?.toString().slice(0, 10)}

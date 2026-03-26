@@ -147,26 +147,28 @@ def chat(req: ChatRequest, db: Session = Depends(get_db)):
     context = _build_context(db)
 
     client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-    response = client.messages.create(
-        model=settings.CLAUDE_MODEL,
-        max_tokens=1024,
-        system=(
-            "You are an AI assistant for Hooli Heard, a customer insights intelligence platform. "
-            "You answer questions about customer feedback, product requests, and pipeline data. "
-            "Use the data context provided to give specific, accurate answers with real account names, "
-            "numbers, and details. Be concise and use bullet points. "
-            "If the data doesn't contain enough information to answer, say so clearly. "
-            "When asked about 'SUNK' or product areas, match to the closest product area in the data "
-            "(e.g., SUNK could refer to Storage, Networking, or specific subcategories). "
-            "Format currency values nicely. Keep answers under 300 words."
-        ),
-        messages=[
-            {
-                "role": "user",
-                "content": f"DATA CONTEXT:\n{context}\n\nUSER QUESTION: {req.message}",
-            }
-        ],
-    )
-
-    answer = response.content[0].text
-    return ChatResponse(answer=answer)
+    try:
+        response = client.messages.create(
+            model=settings.CLAUDE_MODEL,
+            max_tokens=1024,
+            system=(
+                "You are an AI assistant for Hooli Heard, a customer insights intelligence platform. "
+                "You answer questions about customer feedback, product requests, and pipeline data. "
+                "Use the data context provided to give specific, accurate answers with real account names, "
+                "numbers, and details. Be concise and use bullet points. "
+                "If the data doesn't contain enough information to answer, say so clearly. "
+                "When asked about 'SUNK' or product areas, match to the closest product area in the data "
+                "(e.g., SUNK could refer to Storage, Networking, or specific subcategories). "
+                "Format currency values nicely. Keep answers under 300 words."
+            ),
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"DATA CONTEXT:\n{context}\n\nUSER QUESTION: {req.message}",
+                }
+            ],
+        )
+        answer = response.content[0].text
+        return ChatResponse(answer=answer)
+    except Exception:
+        return ChatResponse(answer="Sorry, the chat service is temporarily unavailable. Please try again.")

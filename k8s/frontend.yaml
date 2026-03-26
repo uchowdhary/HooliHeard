@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/rsuguiura-crwv/hooli-heard-frontend:latest
+          image: ghcr.io/uchowdhary/hooli-heard-frontend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 80

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REGISTRY="ghcr.io/rsuguiura-crwv"
+REGISTRY="ghcr.io/uchowdhary"
 TAG="${1:-latest}"
 
 echo "=== Building images (tag: $TAG) ==="

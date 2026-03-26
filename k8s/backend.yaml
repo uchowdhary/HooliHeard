@@ -26,7 +26,7 @@ spec:
               done
       containers:
         - name: backend
-          image: ghcr.io/rsuguiura-crwv/hooli-heard-backend:latest
+          image: ghcr.io/uchowdhary/hooli-heard-backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000

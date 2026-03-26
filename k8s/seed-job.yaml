@@ -20,7 +20,7 @@ spec:
               done
       containers:
         - name: seed
-          image: ghcr.io/rsuguiura-crwv/hooli-heard-seed:latest
+          image: ghcr.io/uchowdhary/hooli-heard-seed:latest
           env:
             - name: DATABASE_URL
               valueFrom:

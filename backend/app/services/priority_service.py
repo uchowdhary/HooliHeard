@@ -26,15 +26,26 @@ def get_insights_by_vertical(db: Session, filters: dict):
 
 
 def get_insights_by_opportunity_stage(db: Session, filters: dict):
-    """Count insights grouped by opportunity_stage."""
+    """Count insights grouped by opportunity_stage, returning top 5 + Other."""
     q = db.query(
         Insight.opportunity_stage,
         func.count(Insight.id).label("count"),
         func.sum(Insight.opportunity_amount).label("total_opportunity"),
     ).filter(Insight.opportunity_stage.isnot(None))
     q = _apply_priority_filters(q, filters)
-    rows = q.group_by(Insight.opportunity_stage).order_by(func.sum(Insight.opportunity_amount).desc()).all()
-    return [{"opportunity_stage": r[0], "count": r[1], "total_opportunity": float(r[2] or 0)} for r in rows]
+    rows = q.group_by(Insight.opportunity_stage).order_by(func.count(Insight.id).desc()).all()
+    all_stages = [{"opportunity_stage": r[0], "count": r[1], "total_opportunity": float(r[2] or 0)} for r in rows]
+
+    # Keep top 5 by count, group rest as "Other"
+    top5 = all_stages[:5]
+    rest = all_stages[5:]
+    if rest:
+        top5.append({
+            "opportunity_stage": "Other",
+            "count": sum(r["count"] for r in rest),
+            "total_opportunity": sum(r["total_opportunity"] for r in rest),
+        })
+    return top5
 
 
 def get_priority_matrix(db: Session, filters: dict):

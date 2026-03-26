@@ -1,5 +1,6 @@
 import { NavLink, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import cwLogo from "@/assets/coreweave-logo.png";
 
 /** Filter keys shared between Dashboard and Insights pages */
 const SHARED_FILTER_KEYS = ["product_area", "insight_category", "vertical", "icp", "source_tool", "time_range", "date_from", "account_name"];
@@ -79,7 +80,7 @@ export function Sidebar() {
       {/* CoreWeave logo + LFG */}
       <div className="flex flex-col items-center gap-1.5 px-6 pb-3">
         <img
-          src="/coreweave-logo.png"
+          src={cwLogo}
           alt="CoreWeave"
           className="h-14 w-14 rounded-lg bg-white p-1"
         />

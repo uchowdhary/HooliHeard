@@ -6,32 +6,31 @@ interface Message {
   content: string;
 }
 
-/** Pre-seeded Q&A for suggested questions — no LLM needed */
+/** Pre-seeded Q&A — exec-level, under 3 lines each */
 const SEEDED_ANSWERS: Record<string, string> = {
-  "Top 3 SUNK requests from customers":
-    "1. Storage: Customers need S3-compatible object storage with cross-region replication (CrowdStrike, Midjourney)\n" +
-    "2. Networking: Multiple customers requesting Site-to-Site VPN for private connectivity to on-prem (Mistral AI, Wayve, PDT Partners)\n" +
-    "3. Kubernetes (CKS): Requests for multi-cluster federation and GPU-aware scheduling improvements (Perplexity AI, Waabi)",
+  "Top 3 SUNK requests":
+    "Storage (11 asks): Object storage delays at Round Rock blocking Midjourney, CrowdStrike.\n" +
+    "Networking (9 asks): Site-to-Site VPN is the #1 request — Mistral, Wayve, PDT Partners, Akasa all need hybrid connectivity.\n" +
+    "CKS (11 asks): Multi-cluster enhancements and education gaps — Perplexity AI, Waabi leading the asks.",
 
-  "Top 3 instance/compute requests":
-    "1. CrowdStrike — B300 capacity at Round Rock deferred; also needs Alava (Spain) nodes blocked by DX contract\n" +
-    "2. Midjourney — B300 first rack delivery delayed (est. Mar 30), network backbone Luma circuit issues\n" +
-    "3. Superhuman — Won't commit beyond 1yr due to GPU market volatility; needs flexibility on model size/family changes",
+  "Top 3 compute requests":
+    "CrowdStrike: B300 at Round Rock deferred + Alava nodes blocked by DX contract.\n" +
+    "Midjourney: B300 delivery delayed to late March; needs B200 bridge cluster extended.\n" +
+    "1X Technologies: $40M pipeline in negotiations — needs Docker support on SUNK nodes without sudo.",
 
-  "Top 3 customers by pipeline value":
-    "1. Hudson River Trading — $329M pipeline (Active Discussion / BMaaS)\n" +
-    "2. Midjourney — $42M pipeline (Negotiations)\n" +
-    "3. 1X Technologies — $40M pipeline (Negotiations)",
+  "Top 3 customers in pipeline":
+    "Hudson River Trading: $329M (Active Discussion / BMaaS)\n" +
+    "Midjourney: $42M (Negotiations)\n" +
+    "1X Technologies: $40M (Negotiations)",
 
   "What are the biggest blockers?":
-    "1. Security: Public K8s endpoints without auth concern (Xaira Therapeutics); FedRAMP High/IL5 certification needed (CrowdStrike)\n" +
-    "2. Billing: No billing API or FOCUS-standard cost export for FinOps tools (Superhuman/Grammarly)\n" +
-    "3. Connectivity: Site-to-Site VPN needed by 5+ customers for hybrid cloud setups",
+    "Security & compliance: FedRAMP/IL5 cert needed (CrowdStrike), public K8s endpoints concern (Xaira).\n" +
+    "Billing: No billing API or FOCUS-standard export for FinOps (Superhuman).\n" +
+    "Connectivity: 5+ customers blocked on Site-to-Site VPN for hybrid cloud.",
 
   "Summarize CKS feedback":
-    "11 key CKS insights across 8 accounts. Top themes: Enhancement requests (4) around multi-cluster and networking, " +
-    "Education Gaps (3) on CKS best practices, and 1 critical issue. Perplexity AI using Tailscale for bi-directional " +
-    "CKS↔AWS EKS connectivity. Waabi needs alpha feature flags enabled.",
+    "11 key insights across 8 accounts. Top themes: enhancement requests (4) for multi-cluster networking, education gaps (3) on best practices.\n" +
+    "Perplexity AI building bi-directional CKS↔AWS EKS via Tailscale. Waabi needs alpha feature flags.",
 };
 
 const SUGGESTIONS = Object.keys(SEEDED_ANSWERS);

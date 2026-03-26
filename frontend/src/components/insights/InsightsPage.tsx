@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { InsightFilters } from "./InsightFilters";
+import { TopInsights } from "./TopInsights";
 import { InsightTable } from "./InsightTable";
 import { InsightDetail } from "./InsightDetail";
 import { ErrorAlert } from "@/components/shared/ErrorAlert";
@@ -98,6 +99,9 @@ export function InsightsPage() {
   return (
     <div className="space-y-4">
       <InsightFilters filters={filters} onChange={setFilters} />
+
+      {/* Top 3 Priority Insights */}
+      <TopInsights filters={filters} onSelect={handleSelect} />
 
       <div className="space-y-4">
         {isError && (

@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router-dom";
-import { PRODUCT_AREAS, INSIGHT_CATEGORIES } from "@/lib/constants";
+import { PRODUCT_AREAS, INSIGHT_CATEGORIES, SOURCE_OPTIONS, TIME_RANGE_OPTIONS } from "@/lib/constants";
 
 const ICP_OPTIONS = ["AI Enterprise", "AI Native", "Enterprise", "SMB"];
 const VERTICAL_OPTIONS = [
@@ -16,6 +16,8 @@ export function FilterBar() {
   const category = searchParams.get("insight_category") ?? "";
   const vertical = searchParams.get("vertical") ?? "";
   const icp = searchParams.get("icp") ?? "";
+  const sourceTool = searchParams.get("source_tool") ?? "";
+  const timeRange = searchParams.get("time_range") ?? "";
 
   const updateParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams);
@@ -24,6 +26,18 @@ export function FilterBar() {
     } else {
       next.delete(key);
     }
+    // When time_range changes, compute date_from
+    if (key === "time_range") {
+      next.delete("date_from");
+      if (value) {
+        const now = new Date();
+        let from: Date | null = null;
+        if (value === "last_week") from = new Date(now.getTime() - 7 * 86400000);
+        else if (value === "last_month") from = new Date(now.getTime() - 30 * 86400000);
+        else if (value === "last_quarter") from = new Date(now.getTime() - 90 * 86400000);
+        if (from) next.set("date_from", from.toISOString().slice(0, 10));
+      }
+    }
     setSearchParams(next);
   };
 
@@ -31,7 +45,7 @@ export function FilterBar() {
     setSearchParams({});
   };
 
-  const hasFilters = productArea || category || vertical || icp;
+  const hasFilters = productArea || category || vertical || icp || sourceTool || timeRange;
 
   const selectClass =
     "rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
@@ -88,6 +102,31 @@ export function FilterBar() {
         {VERTICAL_OPTIONS.map((v) => (
           <option key={v} value={v}>
             {v}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={sourceTool}
+        onChange={(e) => updateParam("source_tool", e.target.value)}
+        className={selectClass}
+      >
+        <option value="">All Sources</option>
+        {SOURCE_OPTIONS.map((s) => (
+          <option key={s} value={s}>
+            {s}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={timeRange}
+        onChange={(e) => updateParam("time_range", e.target.value)}
+        className={selectClass}
+      >
+        {TIME_RANGE_OPTIONS.map((t) => (
+          <option key={t.value} value={t.value}>
+            {t.label}
           </option>
         ))}
       </select>

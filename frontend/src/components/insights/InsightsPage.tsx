@@ -11,7 +11,7 @@ import type { Insight } from "@/types/insight";
 /** Keys that sync between the URL and internal filter state */
 const URL_FILTER_KEYS = [
   "product_area", "insight_category", "account_name", "vertical",
-  "icp", "opportunity_stage", "search",
+  "icp", "opportunity_stage", "search", "source_tool", "date_from",
 ] as const;
 
 function filtersFromParams(sp: URLSearchParams): Partial<IFilters> {

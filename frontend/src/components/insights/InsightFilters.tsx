@@ -1,4 +1,4 @@
-import { PRODUCT_AREAS, INSIGHT_CATEGORIES } from "@/lib/constants";
+import { PRODUCT_AREAS, INSIGHT_CATEGORIES, SOURCE_OPTIONS, TIME_RANGE_OPTIONS } from "@/lib/constants";
 import type { InsightFilters as IFilters } from "@/types/insight";
 
 interface Props {
@@ -104,6 +104,62 @@ export function InsightFilters({ filters, onChange }: Props) {
             {ICP_OPTIONS.map((t) => (
               <option key={t} value={t}>
                 {t}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Source */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-slate-500">
+            Source
+          </label>
+          <select
+            value={filters.source_tool ?? ""}
+            onChange={(e) => update("source_tool", e.target.value)}
+            className={selectClass}
+          >
+            <option value="">All</option>
+            {SOURCE_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Time Range */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-slate-500">
+            Time Range
+          </label>
+          <select
+            value={filters.time_range ?? ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              // Compute date_from from time_range
+              let dateFrom = "";
+              if (val) {
+                const now = new Date();
+                let from: Date | null = null;
+                if (val === "last_week") from = new Date(now.getTime() - 7 * 86400000);
+                else if (val === "last_month") from = new Date(now.getTime() - 30 * 86400000);
+                else if (val === "last_quarter") from = new Date(now.getTime() - 90 * 86400000);
+                if (from) dateFrom = from.toISOString().slice(0, 10);
+              }
+              onChange({
+                ...filters,
+                time_range: val || undefined,
+                date_from: dateFrom || undefined,
+                date_to: undefined,
+                page: 1,
+              });
+            }}
+            className={selectClass}
+          >
+            {TIME_RANGE_OPTIONS.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
               </option>
             ))}
           </select>

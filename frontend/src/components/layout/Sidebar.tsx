@@ -2,7 +2,7 @@ import { NavLink, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 /** Filter keys shared between Dashboard and Insights pages */
-const SHARED_FILTER_KEYS = ["product_area", "insight_category", "vertical", "icp"];
+const SHARED_FILTER_KEYS = ["product_area", "insight_category", "vertical", "icp", "source_tool", "time_range", "date_from"];
 
 const NAV_ITEMS = [
   {

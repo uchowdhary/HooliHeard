@@ -52,6 +52,8 @@ export interface InsightFilters {
   opportunity_stage?: string;
   min_priority_score?: number;
   search?: string;
+  source_tool?: string;
+  time_range?: string;
   sort_by?: string;
   page?: number;
   page_size?: number;

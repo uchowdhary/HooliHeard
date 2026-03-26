@@ -24,7 +24,7 @@ SORT_COLUMNS = {
 
 def _apply_filters(query, product_area, insight_category, account_name, date_from, date_to,
                     unique_insight_status, icp=None, vertical=None, opportunity_stage=None,
-                    min_priority_score=None, search=None):
+                    min_priority_score=None, search=None, source_tool=None):
     if product_area:
         query = query.filter(Insight.product_area == product_area)
     if insight_category:
@@ -47,6 +47,8 @@ def _apply_filters(query, product_area, insight_category, account_name, date_fro
         query = query.filter(Insight.priority_score >= float(min_priority_score))
     if search:
         query = query.filter(Insight.insight_text.ilike(f"%{search}%"))
+    if source_tool:
+        query = query.filter(Insight.source_tool == source_tool)
     return query
 
 
@@ -112,6 +114,7 @@ def list_insights(
     opportunity_stage: Optional[str] = Query(None),
     min_priority_score: Optional[float] = Query(None),
     search: Optional[str] = Query(None, description="Search insight text"),
+    source_tool: Optional[str] = Query(None, description="Filter by source tool"),
     sort_by: Optional[str] = Query(None, description="Sort by: priority_score, opportunity_amount, date_of_record, account_name, total_revenue"),
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
@@ -119,7 +122,7 @@ def list_insights(
 ):
     q = db.query(Insight)
     q = _apply_filters(q, product_area, insight_category, account_name, date_from, date_to,
-                        unique_insight_status, icp, vertical, opportunity_stage, min_priority_score, search)
+                        unique_insight_status, icp, vertical, opportunity_stage, min_priority_score, search, source_tool)
 
     total = q.count()
 

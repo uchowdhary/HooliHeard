@@ -30,6 +30,8 @@ export function DashboardPage() {
     insight_category: searchParams.get("insight_category") ?? undefined,
     vertical: searchParams.get("vertical") ?? undefined,
     icp: searchParams.get("icp") ?? undefined,
+    source_tool: searchParams.get("source_tool") ?? undefined,
+    date_from: searchParams.get("date_from") ?? undefined,
   };
 
   const summary = useSummary(filters);

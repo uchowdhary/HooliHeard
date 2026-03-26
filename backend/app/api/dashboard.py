@@ -45,6 +45,7 @@ def _common_filters(
     icp: Optional[str] = Query(None),
     vertical: Optional[str] = Query(None),
     opportunity_stage: Optional[str] = Query(None),
+    source_tool: Optional[str] = Query(None),
 ):
     return {
         "product_area": product_area,
@@ -55,6 +56,7 @@ def _common_filters(
         "icp": icp,
         "vertical": vertical,
         "opportunity_stage": opportunity_stage,
+        "source_tool": source_tool,
     }
 
 
@@ -68,12 +70,14 @@ def dashboard_summary(
     icp: Optional[str] = Query(None),
     vertical: Optional[str] = Query(None),
     opportunity_stage: Optional[str] = Query(None),
+    source_tool: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     f = _filters_dict(
         product_area=product_area, insight_category=insight_category,
         account_name=account_name, date_from=date_from, date_to=date_to,
         icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+        source_tool=source_tool,
     )
     base = _apply_priority_filters(db.query(Insight), f)
     total_insights = base.count()
@@ -104,12 +108,14 @@ def insights_by_area(
     icp: Optional[str] = Query(None),
     vertical: Optional[str] = Query(None),
     opportunity_stage: Optional[str] = Query(None),
+    source_tool: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     f = _filters_dict(
         product_area=product_area, insight_category=insight_category,
         account_name=account_name, date_from=date_from, date_to=date_to,
         icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+        source_tool=source_tool,
     )
     q = _apply_priority_filters(db.query(Insight), f)
     rows = (
@@ -131,12 +137,14 @@ def insights_by_category(
     icp: Optional[str] = Query(None),
     vertical: Optional[str] = Query(None),
     opportunity_stage: Optional[str] = Query(None),
+    source_tool: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     f = _filters_dict(
         product_area=product_area, insight_category=insight_category,
         account_name=account_name, date_from=date_from, date_to=date_to,
         icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+        source_tool=source_tool,
     )
     q = _apply_priority_filters(db.query(Insight), f)
     rows = (
@@ -158,12 +166,14 @@ def insights_by_account(
     icp: Optional[str] = Query(None),
     vertical: Optional[str] = Query(None),
     opportunity_stage: Optional[str] = Query(None),
+    source_tool: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     f = _filters_dict(
         product_area=product_area, insight_category=insight_category,
         account_name=account_name, date_from=date_from, date_to=date_to,
         icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+        source_tool=source_tool,
     )
     rows = get_enhanced_accounts(db, f, limit=20)
     return [AccountCount(**r) for r in rows]
@@ -179,12 +189,14 @@ def insights_trend(
     icp: Optional[str] = Query(None),
     vertical: Optional[str] = Query(None),
     opportunity_stage: Optional[str] = Query(None),
+    source_tool: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     f = _filters_dict(
         product_area=product_area, insight_category=insight_category,
         account_name=account_name, date_from=date_from, date_to=date_to,
         icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+        source_tool=source_tool,
     )
     q = _apply_priority_filters(db.query(Insight), f)
     rows = (
@@ -209,12 +221,14 @@ def insights_by_vertical(
     icp: Optional[str] = Query(None),
     vertical: Optional[str] = Query(None),
     opportunity_stage: Optional[str] = Query(None),
+    source_tool: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     f = _filters_dict(
         product_area=product_area, insight_category=insight_category,
         account_name=account_name, date_from=date_from, date_to=date_to,
         icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+        source_tool=source_tool,
     )
     rows = get_insights_by_vertical(db, f)
     return [VerticalCount(**r) for r in rows]
@@ -230,12 +244,14 @@ def insights_by_opportunity_stage(
     icp: Optional[str] = Query(None),
     vertical: Optional[str] = Query(None),
     opportunity_stage: Optional[str] = Query(None),
+    source_tool: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     f = _filters_dict(
         product_area=product_area, insight_category=insight_category,
         account_name=account_name, date_from=date_from, date_to=date_to,
         icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+        source_tool=source_tool,
     )
     rows = get_insights_by_opportunity_stage(db, f)
     return [OpportunityStageCount(**r) for r in rows]
@@ -251,12 +267,14 @@ def priority_matrix(
     icp: Optional[str] = Query(None),
     vertical: Optional[str] = Query(None),
     opportunity_stage: Optional[str] = Query(None),
+    source_tool: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     f = _filters_dict(
         product_area=product_area, insight_category=insight_category,
         account_name=account_name, date_from=date_from, date_to=date_to,
         icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+        source_tool=source_tool,
     )
     rows = get_priority_matrix(db, f)
     return [PriorityMatrixPoint(**r) for r in rows]
@@ -272,12 +290,14 @@ def theme_heatmap(
     icp: Optional[str] = Query(None),
     vertical: Optional[str] = Query(None),
     opportunity_stage: Optional[str] = Query(None),
+    source_tool: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     f = _filters_dict(
         product_area=product_area, insight_category=insight_category,
         account_name=account_name, date_from=date_from, date_to=date_to,
         icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+        source_tool=source_tool,
     )
     rows = get_theme_heatmap(db, f)
     return [ThemeHeatmapCell(**r) for r in rows]
@@ -293,12 +313,14 @@ def word_frequencies(
     icp: Optional[str] = Query(None),
     vertical: Optional[str] = Query(None),
     opportunity_stage: Optional[str] = Query(None),
+    source_tool: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     f = _filters_dict(
         product_area=product_area, insight_category=insight_category,
         account_name=account_name, date_from=date_from, date_to=date_to,
         icp=icp, vertical=vertical, opportunity_stage=opportunity_stage,
+        source_tool=source_tool,
     )
     rows = get_word_frequencies(db, f)
     return [WordFrequency(**r) for r in rows]

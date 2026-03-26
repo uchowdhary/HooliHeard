@@ -1,3 +1,14 @@
+export const SOURCE_OPTIONS = [
+  "Gong", "Jira", "Salesforce", "Slack", "Qualtrics", "VoF Spreadsheet",
+];
+
+export const TIME_RANGE_OPTIONS = [
+  { label: "All Time", value: "" },
+  { label: "Last Week", value: "last_week" },
+  { label: "Last Month", value: "last_month" },
+  { label: "Last Quarter", value: "last_quarter" },
+];
+
 export const PRODUCT_AREAS = [
   { label: "Infra", value: "Infra", color: "#3B82F6" },
   { label: "CKS", value: "CKS", color: "#10B981" },

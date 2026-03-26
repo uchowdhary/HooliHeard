@@ -203,4 +203,6 @@ def _apply_priority_filters(query, filters: dict):
         query = query.filter(Insight.priority_score >= float(filters["min_priority_score"]))
     if filters.get("unique_insight_status"):
         query = query.filter(Insight.unique_insight_status == filters["unique_insight_status"])
+    if filters.get("source_tool"):
+        query = query.filter(Insight.source_tool == filters["source_tool"])
     return query

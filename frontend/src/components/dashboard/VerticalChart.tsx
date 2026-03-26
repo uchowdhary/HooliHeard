@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   PieChart,
@@ -19,14 +20,31 @@ interface Props {
 const COLORS = [
   "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899",
   "#06B6D4", "#F97316", "#6366F1", "#14B8A6", "#E11D48",
+  "#9CA3AF", // "Other" — neutral gray
 ];
 
 export function VerticalChart({ data, loading }: Props) {
   const navigate = useNavigate();
 
+  // Top 10 by volume, rest collapsed into "Other"
+  const chartData = useMemo(() => {
+    if (!data) return [];
+    const sorted = [...data].sort((a, b) => b.count - a.count);
+    const top10 = sorted.slice(0, 10);
+    const rest = sorted.slice(10);
+    if (rest.length > 0) {
+      top10.push({
+        vertical: "Other",
+        count: rest.reduce((s, d) => s + d.count, 0),
+        total_opportunity: rest.reduce((s, d) => s + (d.total_opportunity || 0), 0),
+      });
+    }
+    return top10;
+  }, [data]);
+
   const handleClick = (_data: unknown, index: number) => {
-    if (data?.[index]) {
-      navigate(`/insights?vertical=${encodeURIComponent(data[index].vertical)}`);
+    if (chartData?.[index] && chartData[index].vertical !== "Other") {
+      navigate(`/insights?vertical=${encodeURIComponent(chartData[index].vertical)}`);
     }
   };
 
@@ -39,21 +57,21 @@ export function VerticalChart({ data, loading }: Props) {
           No vertical data available
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={280}>
+        <ResponsiveContainer width="100%" height={320}>
           <PieChart>
             <Pie
-              data={data}
+              data={chartData}
               dataKey="count"
               nameKey="vertical"
-              cx="50%"
+              cx="35%"
               cy="50%"
-              outerRadius={80}
-              innerRadius={40}
+              outerRadius={100}
+              innerRadius={50}
               paddingAngle={2}
               cursor="pointer"
               onClick={handleClick}
             >
-              {data.map((_, i) => (
+              {chartData.map((_, i) => (
                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
               ))}
             </Pie>
@@ -66,7 +84,9 @@ export function VerticalChart({ data, loading }: Props) {
                     <p className="font-semibold text-slate-900">{d.vertical}</p>
                     <p className="text-slate-600">{d.count} insights</p>
                     <p className="text-slate-600">Pipeline: {formatCurrency(d.total_opportunity)}</p>
-                    <p className="mt-1 text-blue-500">Click to view insights</p>
+                    {d.vertical !== "Other" && (
+                      <p className="mt-1 text-blue-500">Click to view insights</p>
+                    )}
                   </div>
                 );
               }}
@@ -76,7 +96,7 @@ export function VerticalChart({ data, loading }: Props) {
               align="right"
               verticalAlign="middle"
               iconSize={10}
-              wrapperStyle={{ fontSize: 11 }}
+              wrapperStyle={{ fontSize: 11, maxHeight: 300, overflowY: "auto" }}
             />
           </PieChart>
         </ResponsiveContainer>

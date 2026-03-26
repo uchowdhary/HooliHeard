@@ -40,7 +40,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="flex h-screen w-64 flex-col bg-slate-800 text-white">
+    <aside className="flex h-screen w-48 flex-col bg-slate-800 text-white">
       {/* Branding */}
       <div className="flex h-16 items-center gap-3 px-6 border-b border-slate-700/50">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-sm font-bold">

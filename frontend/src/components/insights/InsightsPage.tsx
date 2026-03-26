@@ -96,10 +96,10 @@ export function InsightsPage() {
   };
 
   return (
-    <div className="flex gap-6">
+    <div className="space-y-4">
       <InsightFilters filters={filters} onChange={setFilters} />
 
-      <div className="flex-1 space-y-4">
+      <div className="space-y-4">
         {isError && (
           <ErrorAlert
             message={String(error)}

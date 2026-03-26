@@ -78,9 +78,11 @@ export function Sidebar() {
 
       {/* CoreWeave logo + LFG */}
       <div className="flex flex-col items-center gap-1.5 px-6 pb-3">
-        <svg className="h-10 w-10 text-slate-400" viewBox="0 0 64 64" fill="currentColor">
-          <path d="M32 4L4 20v24l28 16 28-16V20L32 4zm0 6.5L52.5 22 32 33.5 11.5 22 32 10.5zM8 24.2l22 12.6v21.4L8 45.6V24.2zm26 34v-21.4l22-12.6v21.4L34 58.2z" />
-        </svg>
+        <img
+          src="/coreweave-logo.png"
+          alt="CoreWeave"
+          className="h-14 w-14 rounded-lg bg-white p-1"
+        />
         <span className="text-sm font-black tracking-[0.25em] text-slate-400">
           LFG
         </span>

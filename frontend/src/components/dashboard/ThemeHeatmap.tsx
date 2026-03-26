@@ -87,36 +87,39 @@ export function ThemeHeatmap({ data, loading }: Props) {
           <thead>
             <tr>
               <th className="sticky left-0 bg-white px-2 py-1.5 text-left font-medium text-gray-500 z-10"></th>
-              {categories.map((cat) => (
+              {areas.map((area) => (
                 <th
-                  key={cat}
-                  className="px-1.5 py-1.5 text-center font-medium text-gray-500 min-w-[60px]"
-                  title={cat}
+                  key={area}
+                  className="px-1.5 py-1.5 text-center font-medium text-gray-500 min-w-[70px]"
+                  title={area}
                 >
-                  <span className="block max-w-[70px] truncate">{shortCat(cat)}</span>
+                  <span className="flex flex-col items-center gap-0.5">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: PRODUCT_AREA_COLORS[area] ?? "#6B7280" }}
+                    />
+                    <span className="block max-w-[80px] truncate">{area}</span>
+                  </span>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {areas.map((area) => (
-              <tr key={area}>
-                <td className="sticky left-0 bg-white z-10 px-2 py-1 font-medium whitespace-nowrap">
-                  <span className="flex items-center gap-1.5">
-                    <span
-                      className="inline-block h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: PRODUCT_AREA_COLORS[area] ?? "#6B7280" }}
-                    />
-                    {area}
-                  </span>
+            {categories.map((cat) => (
+              <tr key={cat}>
+                <td
+                  className="sticky left-0 bg-white z-10 px-2 py-1 font-medium whitespace-nowrap"
+                  title={cat}
+                >
+                  {shortCat(cat)}
                 </td>
-                {categories.map((cat) => {
+                {areas.map((area) => {
                   const cell = lookup.get(`${area}|${cat}`);
                   const count = cell?.count ?? 0;
                   const accounts = cell?.account_count ?? 0;
                   return (
                     <td
-                      key={cat}
+                      key={area}
                       className={`px-1.5 py-1 text-center font-semibold rounded-sm ${intensityColor(count, maxCount)} ${count > 0 ? "cursor-pointer hover:ring-2 hover:ring-blue-400" : ""}`}
                       title={count > 0 ? `${count} insights from ${accounts} account${accounts !== 1 ? "s" : ""} — click to view` : "—"}
                       onClick={() => {

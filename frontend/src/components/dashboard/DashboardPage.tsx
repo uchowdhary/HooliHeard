@@ -32,6 +32,7 @@ export function DashboardPage() {
     icp: searchParams.get("icp") ?? undefined,
     source_tool: searchParams.get("source_tool") ?? undefined,
     date_from: searchParams.get("date_from") ?? undefined,
+    account_name: searchParams.get("account_name") ?? undefined,
   };
 
   const summary = useSummary(filters);

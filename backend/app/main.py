@@ -33,10 +33,12 @@ app.add_middleware(
 from app.api.insights import router as insights_router  # noqa: E402
 from app.api.dashboard import router as dashboard_router  # noqa: E402
 from app.api.accounts import router as accounts_router  # noqa: E402
+from app.api.chat import router as chat_router  # noqa: E402
 
 app.include_router(insights_router)
 app.include_router(dashboard_router)
 app.include_router(accounts_router)
+app.include_router(chat_router)
 
 
 @app.get("/")

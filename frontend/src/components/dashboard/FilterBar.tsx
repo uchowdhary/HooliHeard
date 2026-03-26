@@ -10,6 +10,7 @@ export function FilterBar() {
   const icp = searchParams.get("icp") ?? "";
   const sourceTool = searchParams.get("source_tool") ?? "";
   const timeRange = searchParams.get("time_range") ?? "";
+  const accountName = searchParams.get("account_name") ?? "";
 
   const updateParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams);
@@ -37,7 +38,7 @@ export function FilterBar() {
     setSearchParams({});
   };
 
-  const hasFilters = productArea || category || vertical || icp || sourceTool || timeRange;
+  const hasFilters = productArea || category || vertical || icp || sourceTool || timeRange || accountName;
 
   const selectClass =
     "rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
@@ -110,6 +111,14 @@ export function FilterBar() {
           </option>
         ))}
       </select>
+
+      <input
+        type="text"
+        placeholder="Search accounts..."
+        value={accountName}
+        onChange={(e) => updateParam("account_name", e.target.value)}
+        className={`${selectClass} w-40`}
+      />
 
       <select
         value={timeRange}

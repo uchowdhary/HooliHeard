@@ -31,14 +31,14 @@ export function PriorityMatrix({ data, loading }: Props) {
           No priority data available
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={280}>
-          <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
+        <ResponsiveContainer width="100%" height={320}>
+          <ScatterChart margin={{ top: 10, right: 20, bottom: 40, left: 10 }}>
             <XAxis
               dataKey="count"
               type="number"
               name="Insight Count"
               tick={{ fontSize: 12 }}
-              label={{ value: "Insight Count", position: "bottom", fontSize: 12 }}
+              label={{ value: "Insight Count", position: "insideBottom", offset: -5, fontSize: 12 }}
             />
             <YAxis
               dataKey="avg_priority"
@@ -68,7 +68,7 @@ export function PriorityMatrix({ data, loading }: Props) {
                 );
               }}
             />
-            <Legend />
+            <Legend verticalAlign="bottom" wrapperStyle={{ paddingTop: 20 }} />
             {data.map((entry) => (
               <Scatter
                 key={entry.product_area}

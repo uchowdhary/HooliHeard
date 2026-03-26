@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { InsightFilters } from "./InsightFilters";
 import { InsightTable } from "./InsightTable";
@@ -8,51 +8,64 @@ import { useInsights, useInsight } from "@/hooks/useInsights";
 import type { InsightFilters as IFilters } from "@/types/insight";
 import type { Insight } from "@/types/insight";
 
+/** Keys that sync between the URL and internal filter state */
 const URL_FILTER_KEYS = [
   "product_area", "insight_category", "account_name", "vertical",
   "icp", "opportunity_stage", "search",
 ] as const;
 
+function filtersFromParams(sp: URLSearchParams): Partial<IFilters> {
+  const out: Partial<IFilters> = {};
+  for (const key of URL_FILTER_KEYS) {
+    const val = sp.get(key);
+    if (val) out[key] = val;
+  }
+  return out;
+}
+
 export function InsightsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Build initial filters from URL search params (set by dashboard chart clicks)
-  const urlFilters: Partial<IFilters> = {};
-  for (const key of URL_FILTER_KEYS) {
-    const val = searchParams.get(key);
-    if (val) urlFilters[key] = val;
-  }
-
-  const [filters, setFilters] = useState<IFilters>({
+  const [filters, setFiltersRaw] = useState<IFilters>(() => ({
     page: 1,
     page_size: 20,
     sort_by: "priority_score",
-    ...urlFilters,
-  });
+    ...filtersFromParams(searchParams),
+  }));
 
-  // Update filters when URL params change (e.g. clicking from dashboard)
+  // Track whether we're updating from URL to avoid circular updates
+  const fromUrl = useRef(false);
+
+  // Wrapper: when filters change locally, also push shared keys to URL
+  const setFilters = useCallback((next: IFilters | ((prev: IFilters) => IFilters)) => {
+    setFiltersRaw((prev) => {
+      const resolved = typeof next === "function" ? next(prev) : next;
+
+      // Push shared filter keys to URL so sidebar can carry them
+      const sp = new URLSearchParams(window.location.search);
+      let changed = false;
+      for (const key of URL_FILTER_KEYS) {
+        const val = resolved[key];
+        if (val && sp.get(key) !== String(val)) { sp.set(key, String(val)); changed = true; }
+        else if (!val && sp.has(key)) { sp.delete(key); changed = true; }
+      }
+      if (changed) {
+        fromUrl.current = true;
+        setSearchParams(sp, { replace: true });
+      }
+
+      return resolved;
+    });
+  }, [setSearchParams]);
+
+  // When URL params change externally (e.g. navigating from dashboard), sync to state
   useEffect(() => {
-    const newUrlFilters: Partial<IFilters> = {};
-    for (const key of URL_FILTER_KEYS) {
-      const val = searchParams.get(key);
-      if (val) newUrlFilters[key] = val;
-    }
-    if (Object.keys(newUrlFilters).length > 0) {
-      setFilters((f) => ({ ...f, ...newUrlFilters, page: 1 }));
+    if (fromUrl.current) { fromUrl.current = false; return; }
+    const incoming = filtersFromParams(searchParams);
+    if (Object.keys(incoming).length > 0) {
+      setFiltersRaw((f) => ({ ...f, ...incoming, page: 1 }));
     }
   }, [searchParams]);
-  // Sync shared filter keys back to URL so sidebar carries them to Dashboard
-  const SHARED_KEYS = ["product_area", "insight_category", "vertical", "icp"] as const;
-  useEffect(() => {
-    const next = new URLSearchParams(searchParams);
-    let changed = false;
-    for (const key of SHARED_KEYS) {
-      const val = filters[key];
-      if (val && next.get(key) !== val) { next.set(key, val); changed = true; }
-      else if (!val && next.has(key)) { next.delete(key); changed = true; }
-    }
-    if (changed) setSearchParams(next, { replace: true });
-  }, [filters.product_area, filters.insight_category, filters.vertical, filters.icp]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);

@@ -13,6 +13,7 @@ COPY backend/app ./app
 COPY scripts/seed_db.py ./seed_db.py
 COPY data/output/Customer_Insights_Last30Days.xlsx ./Customer_Insights_Last30Days.xlsx
 COPY data/output/Customer_Insights_2MonthsPrior.xlsx ./Customer_Insights_2MonthsPrior.xlsx
+COPY data/output/VoF_Weekly_Insights.xlsx ./VoF_Weekly_Insights.xlsx
 COPY data/output/insights.json ./insights.json
 
 CMD ["python3", "seed_db.py"]

@@ -3,6 +3,7 @@
 
 import json
 import math
+import re
 import sys
 import uuid
 from datetime import date, datetime, timezone
@@ -20,11 +21,15 @@ from app.models.insight import Insight  # noqa: E402
 # Primary: two enriched xlsx files (Last30Days + 2MonthsPrior)
 XLSX_LAST30 = ROOT / "data" / "output" / "Customer_Insights_Last30Days.xlsx"
 XLSX_2MONTHS = ROOT / "data" / "output" / "Customer_Insights_2MonthsPrior.xlsx"
+# Voice of Field weekly insights
+VOF_XLSX = ROOT / "data" / "output" / "VoF_Weekly_Insights.xlsx"
 # Fallback paths for Docker / k8s
 if not XLSX_LAST30.exists():
     XLSX_LAST30 = Path("Customer_Insights_Last30Days.xlsx")
 if not XLSX_2MONTHS.exists():
     XLSX_2MONTHS = Path("Customer_Insights_2MonthsPrior.xlsx")
+if not VOF_XLSX.exists():
+    VOF_XLSX = Path("VoF_Weekly_Insights.xlsx")
 
 # Legacy fallbacks
 XLSX_FILE = ROOT / "data" / "output" / "Insights_Combined_2026.xlsx"
@@ -68,6 +73,229 @@ TIER_MULTIPLIERS = {
     "AI Enterprise": 3.0, "AI Lab": 2.5, "AI Platform": 2.0, "AI Native": 1.5,
     "Top Account": 3.0, "Strategic": 3.0, "Growth": 2.0, "Standard": 1.0,
 }
+
+
+# --- VoF category normalization ---
+# Maps messy VoF categories to the canonical 13 categories
+VOF_CATEGORY_MAP = {
+    # Exact matches (case-insensitive handled in code)
+    "capacity": "Capacity",
+    "capacity ask": "Capacity",
+    "capacity issues": "Capacity Issues",
+    "capacity issues & customer requirements (blocker)": "Customer Requirements (Blocker)",
+    "capacity issues - customer looking for capacity we can't support right now": "Capacity Issues",
+    "capacity issues; customer requirements (blocker)": "Customer Requirements (Blocker)",
+    "customer requirements": "Customer Requirements (Enhancement)",
+    "customer requirements (blocker)": "Customer Requirements (Blocker)",
+    "customer requirements (enhancemen) & pricing": "Customer Requirements (Enhancement)",
+    "customer requirements (enhancement)": "Customer Requirements (Enhancement)",
+    "customer requirements (enhancement); education gaps": "Customer Requirements (Enhancement)",
+    "customer requirements (enhancement; capacity planning)": "Customer Requirements (Enhancement)",
+    "customer requirements (potential blocker)": "Customer Requirements (Blocker)",
+    "customer requirements – blocker": "Customer Requirements (Blocker)",
+    "customer requirements – blocker (compliance)": "Customer Requirements (Blocker)",
+    "customer requirements – blocker (scale/availability & timeline)": "Customer Requirements (Blocker)",
+    "customer requirements – enhancement": "Customer Requirements (Enhancement)",
+    "customer requirements – enhancement (commercial structure)": "Customer Requirements (Enhancement)",
+    "customer requirements – enhancement (events/dc); education gaps (parquet guidance)": "Customer Requirements (Enhancement)",
+    "customer requirements — blocker": "Customer Requirements (Blocker)",
+    "customer requirements — enhancement": "Customer Requirements (Enhancement)",
+    "education gap": "Education Gaps",
+    "education gaps": "Education Gaps",
+    "education gaps - customers don't know something exists": "Education Gaps",
+    "education gaps; customer requirements (enhancement)": "Education Gaps",
+    "issues": "Issues",
+    "issues - these are technical issues customers faced": "Issues",
+    "issues; customer requirements (enhancement)": "Issues",
+    "issues; customer requirements (enhancement); capacity issues": "Issues",
+    "issues; education gaps; customer requirements (enhancement)": "Issues",
+    "null": "Null",
+    "other": "Null",
+    "partnership": "GTM / Partnership",
+    "performance": "Issues",
+    "pricing": "Pricing / Terms",
+    "pricing & capacity": "Pricing / Terms",
+    "pricing / terms": "Pricing / Terms",
+    "pricing/terms": "Pricing / Terms",
+}
+
+# Maps VoF product areas to canonical 4
+VOF_AREA_MAP = {
+    "infra": "Infra",
+    "cks": "CKS",
+    "platform": "Platform",
+    "ai services": "AI Services",
+    "ai services (sunk/inference)": "AI Services",
+    "w&b": "AI Services",
+    "weights & biases": "AI Services",
+    "multiple": "Infra",
+    "other (cost)": "Infra",
+    "other (term)": "Infra",
+}
+
+# Default subcategory by product area
+VOF_SUBCATEGORY_DEFAULTS = {
+    "Infra": "Compute",
+    "CKS": "CKS",
+    "Platform": "Console / API / Terraform",
+    "AI Services": "Inference",
+}
+
+# VoF column name normalization — maps all header variants to canonical keys
+VOF_COL_MAP = {
+    "account": "account_name",
+    "account name": "account_name",
+    "account name (sfdc)": "account_name",
+    "insight": "insight_text",
+    "insights": "insight_text",
+    "category": "insight_category",
+    "categories": "insight_category",
+    "insight category": "insight_category",
+    "product area": "product_area",
+    "product areas": "product_area",
+    "product subcategory": "product_subcategory",
+    "subcategory": "product_subcategory",
+    "sales stage": "opportunity_stage",
+    "sales stage (now)": "opportunity_stage",
+    "opportunity $ amount": "opportunity_amount",
+    "opportunity amount ($)": "opportunity_amount",
+    "opportunity amount (usd)": "opportunity_amount",
+    "opportunity $ amount": "opportunity_amount",
+    "customer size": "use_case",
+    "customer size (gpus / scale)": "gpu_types",
+    "customer size / capacity signal": "gpu_types",
+    "customer use case": "use_case",
+    "gong call link": "source_link",
+    "gong / sf link": "source_link",
+    "gong links": "source_link",
+    "sfdc / gong call link": "source_link",
+    "gong link": "source_link",
+    "gong call link": "source_link",
+    "ent or native?": "icp",
+}
+
+
+def _parse_vof_sheet_date(sheet_name: str) -> date:
+    """Parse a VoF sheet name like '3926' → 2026-03-09, '111725' → 2025-11-17."""
+    name = sheet_name.strip()
+    # Try to parse as MMDDYY or MDDYY
+    if len(name) == 6:
+        # MMDDYY
+        m, d, y = int(name[:2]), int(name[2:4]), 2000 + int(name[4:6])
+    elif len(name) == 5:
+        # MDDYY
+        m, d, y = int(name[:1]), int(name[1:3]), 2000 + int(name[3:5])
+    elif len(name) == 4:
+        # MDYY — e.g., 3926 → M=3, D=9, YY=26
+        m, d, y = int(name[0]), int(name[1]), 2000 + int(name[2:4])
+    else:
+        return date.today()
+    try:
+        return date(y, m, d)
+    except ValueError:
+        return date.today()
+
+
+def load_vof_xlsx(path: Path) -> list[dict]:
+    """Load Voice of Field weekly insights from a multi-sheet xlsx file."""
+    import openpyxl
+
+    wb = openpyxl.load_workbook(str(path), read_only=True)
+    all_data = []
+
+    for sheet_name in wb.sheetnames:
+        ws = wb[sheet_name]
+        rows = list(ws.iter_rows(values_only=True))
+        if not rows:
+            continue
+
+        # Detect title row (first cell is long description, second cell is None)
+        if rows[0][1] is None and len(str(rows[0][0] or "")) > 30:
+            raw_headers = rows[1]
+            data_rows = rows[2:]
+        else:
+            raw_headers = rows[0]
+            data_rows = rows[1:]
+
+        # Normalize headers to lowercase for mapping
+        headers = [str(h).strip().lower() if h else "" for h in raw_headers]
+
+        sheet_date = _parse_vof_sheet_date(sheet_name)
+
+        for row in data_rows:
+            # Skip empty rows
+            if not any(cell for cell in row[:3]):
+                continue
+
+            record = {}
+            for i, header in enumerate(headers):
+                if not header:
+                    continue
+                key = VOF_COL_MAP.get(header, header)
+                val = row[i] if i < len(row) else None
+                if val is not None:
+                    record[key] = val
+
+            # Skip rows with no insight text
+            if not record.get("insight_text"):
+                continue
+
+            # Normalize category
+            raw_cat = str(record.get("insight_category") or "Null").strip().rstrip(".")
+            record["insight_category"] = VOF_CATEGORY_MAP.get(raw_cat.lower(), "Null")
+
+            # Normalize product area
+            raw_area = str(record.get("product_area") or "Infra").strip()
+            record["product_area"] = VOF_AREA_MAP.get(raw_area.lower(), "Infra")
+
+            # Default subcategory if missing
+            if not record.get("product_subcategory"):
+                record["product_subcategory"] = VOF_SUBCATEGORY_DEFAULTS.get(
+                    record["product_area"], "General"
+                )
+
+            # Normalize opportunity stage (strip trailing period)
+            stage = record.get("opportunity_stage")
+            if stage:
+                record["opportunity_stage"] = str(stage).strip().rstrip(".")
+
+            # Normalize opportunity amount
+            opp = record.get("opportunity_amount")
+            if opp is not None:
+                try:
+                    record["opportunity_amount"] = float(opp)
+                except (ValueError, TypeError):
+                    record["opportunity_amount"] = None
+
+            # Normalize ICP from "ENT or Native?" column
+            icp_raw = record.get("icp")
+            if icp_raw:
+                icp_str = str(icp_raw).strip().upper()
+                if "ENT" in icp_str:
+                    record["icp"] = "AI Enterprise"
+                elif "NATIVE" in icp_str:
+                    record["icp"] = "AI Native"
+                else:
+                    record["icp"] = None
+
+            # Set VoF-specific fields
+            record["date_of_record"] = sheet_date
+            record["source_tool"] = "Gong"
+            record["input_data_source"] = "Voice of Field"
+
+            # Build dedup group key
+            record["dedup_group_key"] = "|".join([
+                str(record.get("account_name", "")),
+                str(record.get("date_of_record", "")),
+                str(record.get("product_area", "")),
+                str(record.get("product_subcategory", "")),
+                str(record.get("insight_category", "")),
+            ])
+
+            all_data.append(record)
+
+    wb.close()
+    return all_data
 
 
 def compute_priority_score(row):
@@ -301,7 +529,17 @@ def main():
             return
 
         count = load_insights(data, session)
-        print(f"Seeded {count} insights into the database.")
+        print(f"Seeded {count} insights from primary sources.")
+
+        # Load Voice of Field data (additive)
+        if VOF_XLSX.exists():
+            print(f"Loading Voice of Field insights from {VOF_XLSX}")
+            vof_data = load_vof_xlsx(VOF_XLSX)
+            vof_count = load_insights(vof_data, session)
+            count += vof_count
+            print(f"Seeded {vof_count} VoF insights.")
+
+        print(f"Total: {count} insights in the database.")
     finally:
         session.close()
 

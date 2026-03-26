@@ -9,28 +9,28 @@ interface Message {
 /** Pre-seeded Q&A — exec-level, under 3 lines each */
 const SEEDED_ANSWERS: Record<string, string> = {
   "Top 3 SUNK requests":
-    "Storage (11 asks): Object storage delays at Round Rock blocking Midjourney, CrowdStrike.\n" +
-    "Networking (9 asks): Site-to-Site VPN is the #1 request — Mistral, Wayve, PDT Partners, Akasa all need hybrid connectivity.\n" +
-    "CKS (11 asks): Multi-cluster enhancements and education gaps — Perplexity AI, Waabi leading the asks.",
+    "Compute (416 asks): GPU capacity is the dominant signal — B200/B300 delivery timelines, Hopper spot pricing, and burst capacity across NVIDIA, Midjourney, CrowdStrike.\n" +
+    "Storage (58 asks): Object storage performance and checkpoint write speeds blocking training workloads — Midjourney, CrowdStrike, Accelerated Understanding.\n" +
+    "Networking (33 asks): Site-to-Site VPN is the #1 request — Mistral, Wayve, PDT Partners, Amazon all need hybrid/multi-cloud connectivity.",
 
   "Top 3 compute requests":
-    "CrowdStrike: B300 at Round Rock deferred + Alava nodes blocked by DX contract.\n" +
-    "Midjourney: B300 delivery delayed to late March; needs B200 bridge cluster extended.\n" +
-    "1X Technologies: $40M pipeline in negotiations — needs Docker support on SUNK nodes without sudo.",
+    "NVIDIA (27 asks): Largest signal source — GPU fleet management, B200/B300 ramp, and cross-site capacity orchestration.\n" +
+    "Midjourney (22 asks): B300 delivery delayed; needs B200 bridge cluster extended; object storage perf critical for training.\n" +
+    "CrowdStrike (27 asks): B300 at Round Rock deferred + Alava nodes blocked by DX contract; FedRAMP/IL5 compliance blocker.",
 
   "Top 3 customers in pipeline":
-    "Hudson River Trading: $329M (Active Discussion / BMaaS)\n" +
-    "Midjourney: $42M (Negotiations)\n" +
-    "1X Technologies: $40M (Negotiations)",
+    "Hudson River Trading: $329M — bare-metal API maturity and 5,000+ GPU cluster deployment by May.\n" +
+    "Midjourney: $42M — B300 delivery timeline + storage performance for training.\n" +
+    "1X Technologies: $40M — B200 deployment delayed to mid-June; needs Docker support without sudo.",
 
   "What are the biggest blockers?":
-    "Security & compliance: FedRAMP/IL5 cert needed (CrowdStrike), public K8s endpoints concern (Xaira).\n" +
-    "Billing: No billing API or FOCUS-standard export for FinOps (Superhuman).\n" +
-    "Connectivity: 5+ customers blocked on Site-to-Site VPN for hybrid cloud.",
+    "65 blocker-level signals across the portfolio. Top themes:\n" +
+    "Security & compliance: FedRAMP/IL5 (CrowdStrike), public K8s endpoints (Xaira), DPU-enforced isolation (Amgen).\n" +
+    "Capacity gaps: B200/B300 delivery delays impacting 1X Technologies, Midjourney. AWS interconnect requires MacSec + symmetrical APIs.",
 
   "Summarize CKS feedback":
-    "11 key insights across 8 accounts. Top themes: enhancement requests (4) for multi-cluster networking, education gaps (3) on best practices.\n" +
-    "Perplexity AI building bi-directional CKS↔AWS EKS via Tailscale. Waabi needs alpha feature flags.",
+    "91 CKS insights across the portfolio. Top themes: enhancement requests for multi-cluster networking, bare-metal API maturity (HRT), and Kubernetes lifecycle management.\n" +
+    "Perplexity AI building bi-directional CKS↔AWS EKS via Tailscale. Reservation operator issues flagged by Andromeda.",
 };
 
 const SUGGESTIONS = Object.keys(SEEDED_ANSWERS);

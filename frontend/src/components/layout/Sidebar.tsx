@@ -1,5 +1,8 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
+
+/** Filter keys shared between Dashboard and Insights pages */
+const SHARED_FILTER_KEYS = ["product_area", "insight_category", "vertical", "icp"];
 
 const NAV_ITEMS = [
   {
@@ -46,6 +49,19 @@ const NAV_ITEMS = [
 ];
 
 export function Sidebar() {
+  const [searchParams] = useSearchParams();
+
+  /** Build a path that carries over active shared filters */
+  const withFilters = (basePath: string) => {
+    const carry = new URLSearchParams();
+    for (const key of SHARED_FILTER_KEYS) {
+      const val = searchParams.get(key);
+      if (val) carry.set(key, val);
+    }
+    const qs = carry.toString();
+    return qs ? `${basePath}?${qs}` : basePath;
+  };
+
   return (
     <aside className="flex h-screen w-64 flex-col bg-slate-800 text-white">
       {/* Branding */}
@@ -78,7 +94,7 @@ export function Sidebar() {
           ) : (
             <NavLink
               key={item.path}
-              to={item.path}
+              to={withFilters(item.path)}
               end={item.path === "/"}
               className={({ isActive }) =>
                 cn(

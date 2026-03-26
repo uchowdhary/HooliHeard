@@ -14,7 +14,7 @@ const URL_FILTER_KEYS = [
 ] as const;
 
 export function InsightsPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Build initial filters from URL search params (set by dashboard chart clicks)
   const urlFilters: Partial<IFilters> = {};
@@ -41,6 +41,19 @@ export function InsightsPage() {
       setFilters((f) => ({ ...f, ...newUrlFilters, page: 1 }));
     }
   }, [searchParams]);
+  // Sync shared filter keys back to URL so sidebar carries them to Dashboard
+  const SHARED_KEYS = ["product_area", "insight_category", "vertical", "icp"] as const;
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    let changed = false;
+    for (const key of SHARED_KEYS) {
+      const val = filters[key];
+      if (val && next.get(key) !== val) { next.set(key, val); changed = true; }
+      else if (!val && next.has(key)) { next.delete(key); changed = true; }
+    }
+    if (changed) setSearchParams(next, { replace: true });
+  }, [filters.product_area, filters.insight_category, filters.vertical, filters.icp]);
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
 

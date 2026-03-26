@@ -19,37 +19,22 @@ interface Props {
   loading: boolean;
 }
 
-const TOP_STAGES = new Set([
-  "Discovery",
-  "Capacity Review",
-  "Closed Won",
-  "Technical Evaluation",
-  "Legal Redlines",
-  "Negotiations",
-  "Closed Lost",
-]);
-
 export function OpportunityPipeline({ data, loading }: Props) {
   const navigate = useNavigate();
 
   const chartData = useMemo(() => {
     if (!data) return [];
-    const top: OpportunityStageCount[] = [];
-    let otherCount = 0;
-    let otherOpp = 0;
-    for (const d of data) {
-      if (TOP_STAGES.has(d.opportunity_stage)) {
-        top.push(d);
-      } else {
-        otherCount += d.count;
-        otherOpp += d.total_opportunity;
-      }
+    const sorted = [...data].sort((a, b) => b.count - a.count);
+    const top5 = sorted.slice(0, 5);
+    const rest = sorted.slice(5);
+    if (rest.length > 0) {
+      top5.push({
+        opportunity_stage: "Other",
+        count: rest.reduce((s, d) => s + d.count, 0),
+        total_opportunity: rest.reduce((s, d) => s + d.total_opportunity, 0),
+      });
     }
-    top.sort((a, b) => b.count - a.count);
-    if (otherCount > 0) {
-      top.push({ opportunity_stage: "Other", count: otherCount, total_opportunity: otherOpp });
-    }
-    return top;
+    return top5;
   }, [data]);
 
   const handleClick = (entry: OpportunityStageCount) => {

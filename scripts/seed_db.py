@@ -175,6 +175,37 @@ VOF_COL_MAP = {
 }
 
 
+# Normalize messy VoF stages to canonical 7 + Other
+# Order: check substrings from most specific to least
+_STAGE_NORMALIZE = [
+    ("closed won", "Closed Won"),
+    ("closed lost", "Closed Lost"),
+    ("legal redline", "Legal Redlines"),
+    ("negotiation", "Negotiations"),
+    ("capacity review", "Capacity Review"),
+    ("technical evaluation", "Technical Evaluation"),
+    ("qualification", "Discovery"),
+    ("discovery", "Discovery"),
+    ("prospect", "Discovery"),
+    ("pipeline", "Discovery"),
+]
+
+
+def _normalize_stage(raw: str) -> str:
+    """Map a messy VoF opportunity stage to one of 7 canonical values or 'Other'."""
+    low = raw.lower()
+    if low in ("n/a", "no open opp", "no active opportunity", "", "none"):
+        return "Other"
+    for substring, canonical in _STAGE_NORMALIZE:
+        if substring in low:
+            return canonical
+    if "current customer" in low or "active customer" in low:
+        return "Closed Won"
+    if "no open" in low or "no active" in low or "not found" in low or "former" in low:
+        return "Other"
+    return "Other"
+
+
 def _parse_vof_sheet_date(sheet_name: str) -> date:
     """Parse a VoF sheet name like '3926' → 2026-03-09, '111725' → 2025-11-17."""
     name = sheet_name.strip()
@@ -254,10 +285,10 @@ def load_vof_xlsx(path: Path) -> list[dict]:
                     record["product_area"], "General"
                 )
 
-            # Normalize opportunity stage (strip trailing period, truncate to 100 chars)
+            # Normalize opportunity stage to canonical 7 + Other
             stage = record.get("opportunity_stage")
             if stage:
-                record["opportunity_stage"] = str(stage).strip().rstrip(".")[:100]
+                record["opportunity_stage"] = _normalize_stage(str(stage).strip().rstrip("."))
 
             # Normalize opportunity amount
             opp = record.get("opportunity_amount")
